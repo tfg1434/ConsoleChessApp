@@ -1,0 +1,11 @@
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\bin\Debug\netcoreapp2.1\ShittyChessApp.deps.json
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\bin\Debug\netcoreapp2.1\ShittyChessApp.runtimeconfig.json
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\bin\Debug\netcoreapp2.1\ShittyChessApp.runtimeconfig.dev.json
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\bin\Debug\netcoreapp2.1\ShittyChessApp.dll
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\bin\Debug\netcoreapp2.1\ShittyChessApp.pdb
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.csprojAssemblyReference.cache
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.csproj.CoreCompileInputs.cache
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.AssemblyInfoInputs.cache
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.AssemblyInfo.cs
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.dll
+C:\Users\Eglin\source\repos\ShittyChessApp\ShittyChessApp\obj\Debug\netcoreapp2.1\ShittyChessApp.pdb
