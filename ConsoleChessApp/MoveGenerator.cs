@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Numerics;
+using System.Linq;
 
 namespace ShittyChessApp {
     static class MoveGenerator {
@@ -11,29 +12,58 @@ namespace ShittyChessApp {
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
         private static List<Move> moves;
 
-        public static List<Move> GenerateMoves(Board board) {
+        public static List<Move> GenerateMoves(Piece[,] cells, Piece.PieceColour colour_to_move) {
             moves = new List<Move>();
 
             for (int start_x = 0; start_x < Board.GridSize; start_x++) {
                 for (int start_y = 0; start_y < Board.GridSize; start_y++) {
-                    Piece piece = board.Cells[start_x, start_y];
+                    Piece piece = cells[start_x, start_y];
                     var start_cell = new Vector2Int(start_x, start_y);
 
-                    if (piece.MyPieceColour == board.ColourToMove) {
+                    if (piece.MyPieceColour == colour_to_move) {
                         if (piece.IsSlidingPiece) {
-                            _GenerateSlidingMoves(start_cell, board);
+                            _GenerateSlidingMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.Pawn) {
-                            _GeneratePawnMoves(start_cell, board);
+                            _GeneratePawnMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.Knight) {
-                            _GenerateKnightMoves(start_cell, board);
+                            _GenerateKnightMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.King) {
-                            _GenerateKingMoves(start_cell, board);
+                            _GenerateKingMoves(start_cell, cells);
                         }
                     }
                 }
             }
 
             return moves;
+        }
+
+        public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
+            List<Move> pruned_moves = new();
+            Piece.PieceColour enemy_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+
+            Vector2Int my_king_square = default;
+            for (var y = 0; y < Board.GridSize; y++) {
+                for (var x = 0; x < Board.GridSize; x++) {
+                    if (board.Cells[x, y].MyPieceType == Piece.PieceType.King && board.Cells[x, y].MyPieceColour == board.ColourToMove) {
+                        my_king_square = new Vector2Int(x, y);
+                    }
+                }
+            }
+
+            //Console.WriteLine($"x: {my_king_square.x} y: {my_king_square.y}");
+
+            foreach (Move move in moves) {
+                Piece[,] test_cells = board.SimulateMove(move);
+                List<Move> opponent_responses = GenerateMoves(test_cells, enemy_colour);
+
+                if (opponent_responses.Any(response => response.TargetSquare == my_king_square)) {
+                    //opponent can capture king - so last move was illegal
+                } else {
+                    pruned_moves.Add(move);
+                }
+            }
+
+            return pruned_moves;
         }
 
         private static int _GetSquaresToEdge(Vector2Int cell, int dir_offset_index) {
@@ -56,8 +86,8 @@ namespace ShittyChessApp {
             return squares_to_edge[dir_offset_index];
         }
 
-        private static void _GenerateSlidingMoves(Vector2Int start_cell, Board board) {
-            Piece piece = board.Cells[start_cell.x, start_cell.y];
+        private static void _GenerateSlidingMoves(Vector2Int start_cell, Piece[,] cells) {
+            Piece piece = cells[start_cell.x, start_cell.y];
 
             var enemy_colour = piece.MyPieceColour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
 
@@ -69,7 +99,7 @@ namespace ShittyChessApp {
                 for (int n = 0; n < _GetSquaresToEdge(start_cell, dir_index); n++) {
                     var target_cell = new Vector2Int(start_cell.x + sliding_offsets[dir_index, 0] * (n + 1),
                         start_cell.y + sliding_offsets[dir_index, 1] * (n + 1));
-                    Piece target_piece = board.Cells[target_cell.x, target_cell.y];
+                    Piece target_piece = cells[target_cell.x, target_cell.y];
 
                     //blocked by friendly piece? break to next dir index
                     if (target_piece.MyPieceColour == piece.MyPieceColour) {
@@ -86,20 +116,20 @@ namespace ShittyChessApp {
             }
         }
 
-        private static void _GeneratePawnMoves(Vector2Int start_cell, Board board) {
-            Piece piece = board.Cells[start_cell.x, start_cell.y];
+        private static void _GeneratePawnMoves(Vector2Int start_cell, Piece[,] cells) {
+            Piece piece = cells[start_cell.x, start_cell.y];
 
             int forward = piece.MyPieceColour == Piece.PieceColour.White ? -1 : 1;
 
             //one forward
             var target_cell = new Vector2Int(start_cell.x, start_cell.y + forward);
-            if (Board.InRange(target_cell) && board.Cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
+            if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
                 moves.Add(new Move(start_cell, target_cell));
             }
             //two forward
             if (piece.CanDoubleMove) {
                 target_cell = new Vector2Int(start_cell.x, start_cell.y + forward * 2);
-                if (Board.InRange(target_cell) && board.Cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
+                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
                     moves.Add(new Move(start_cell, target_cell));
                 }
             }
@@ -110,19 +140,19 @@ namespace ShittyChessApp {
                 side = -side;
 
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y + forward);
-                if (Board.InRange(target_cell) && board.Cells[target_cell.x, target_cell.y].MyPieceType != Piece.PieceType.None && board.Cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour){
+                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType != Piece.PieceType.None && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour){
                     moves.Add(new Move(start_cell, target_cell));
                 }
             }
         }
 
-        private static void _GenerateKnightMoves(Vector2Int start_cell, Board board) {
-            Piece piece = board.Cells[start_cell.x, start_cell.y];
+        private static void _GenerateKnightMoves(Vector2Int start_cell, Piece[,] cells) {
+            Piece piece = cells[start_cell.x, start_cell.y];
 
             for (int i = 0; i < knight_offsets.GetLength(0); i++) {
                 var target_cell = new Vector2Int(start_cell.x + knight_offsets[i, 0], start_cell.y + knight_offsets[i, 1]);
                 if (Board.InRange(target_cell)) {
-                    Piece target_piece = board.Cells[target_cell.x, target_cell.y];
+                    Piece target_piece = cells[target_cell.x, target_cell.y];
 
                     if (target_piece.MyPieceColour != piece.MyPieceColour) {
                         moves.Add(new Move(start_cell, target_cell));
@@ -131,14 +161,14 @@ namespace ShittyChessApp {
             }
         }
 
-        private static void _GenerateKingMoves(Vector2Int start_cell, Board board) {
-            Piece piece = board.Cells[start_cell.x, start_cell.y];
+        private static void _GenerateKingMoves(Vector2Int start_cell, Piece[,] cells) {
+            Piece piece = cells[start_cell.x, start_cell.y];
 
             for (int i = 0; i < sliding_offsets.GetLength(0); i++) {
                 var target_cell = new Vector2Int(start_cell.x + sliding_offsets[i, 0], start_cell.y + sliding_offsets[i, 1]);
 
                 if (Board.InRange(target_cell)) {
-                    Piece target_piece = board.Cells[target_cell.x, target_cell.y];
+                    Piece target_piece = cells[target_cell.x, target_cell.y];
 
                     if (target_piece.MyPieceColour != piece.MyPieceColour) {
                         moves.Add(new Move(start_cell, target_cell));

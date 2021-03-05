@@ -26,9 +26,10 @@ namespace ShittyChessApp {
             Black = 2,
         }
 
-        public Piece(PieceType type, PieceColour colour) {
+        public Piece(PieceType type, PieceColour colour, bool can_double_move = true) {
             MyPieceType = type;
             MyPieceColour = colour;
+            CanDoubleMove = can_double_move;
         }
     }
 }

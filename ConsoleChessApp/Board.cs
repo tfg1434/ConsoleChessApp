@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace ShittyChessApp {
     class Board {
@@ -62,6 +63,28 @@ namespace ShittyChessApp {
             Console.Write(print);
 
             Console.ResetColor();
+        }
+
+        //simulates a move and returns Cells, but does not actually change the board.
+        public Piece[,] SimulateMove(Move move) {
+            Piece[,] cells = new Piece[GridSize, GridSize];
+            for (int y = 0; y < GridSize; y++) {
+                for (int x = 0; x < GridSize; x++) {
+                    cells[x, y] = new Piece(Cells[x, y].MyPieceType, Cells[x, y].MyPieceColour, Cells[x, y].CanDoubleMove);
+                }
+            }
+
+            Piece to = cells[move.TargetSquare.x, move.TargetSquare.y];
+            Piece from = cells[move.StartSquare.x, move.StartSquare.y];
+
+            to.MyPieceType = from.MyPieceType;
+            to.MyPieceColour = from.MyPieceColour;
+
+            from.MyPieceType = Piece.PieceType.None;
+            from.MyPieceColour = Piece.PieceColour.None;
+            to.CanDoubleMove = false;
+
+            return cells;
         }
 
         public void Draw() {

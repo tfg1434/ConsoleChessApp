@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace ShittyChessApp {
     class Program {
@@ -12,9 +13,11 @@ namespace ShittyChessApp {
                 Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
                 Utils.ClearCurrentConsoleLine();
 
-                Move move;
-                if (MoveGenerator.TryParse(out move, Console.ReadLine())) {
-                    if (MoveGenerator.GenerateMoves(board).Contains(move)) {
+                if (MoveGenerator.TryParse(out Move move, Console.ReadLine())) {
+                    List<Move> moves = MoveGenerator.GenerateMoves(board.Cells, board.ColourToMove);
+                    moves = MoveGenerator.PruneIllegalMoves(moves, board);
+
+                    if (moves.Contains(move)) {
                         board.Move(move);
                     } else {
                         Console.Write("illegal move!!!!");
