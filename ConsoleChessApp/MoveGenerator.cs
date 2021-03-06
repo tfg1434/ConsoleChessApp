@@ -38,23 +38,24 @@ namespace ShittyChessApp {
         }
 
         public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
-            List<Move> pruned_moves = new();
             Piece.PieceColour enemy_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
-
+            List<Move> pruned_moves = new();
             Vector2Int my_king_square = default;
-            for (var y = 0; y < Board.GridSize; y++) {
-                for (var x = 0; x < Board.GridSize; x++) {
-                    if (board.Cells[x, y].MyPieceType == Piece.PieceType.King && board.Cells[x, y].MyPieceColour == board.ColourToMove) {
-                        my_king_square = new Vector2Int(x, y);
-                    }
-                }
-            }
 
             //Console.WriteLine($"x: {my_king_square.x} y: {my_king_square.y}");
+            Console.WriteLine(board.ColourToMove);
 
             foreach (Move move in moves) {
                 Piece[,] test_cells = board.SimulateMove(move);
                 List<Move> opponent_responses = GenerateMoves(test_cells, enemy_colour);
+
+                for (var y = 0; y < Board.GridSize; y++) {
+                    for (var x = 0; x < Board.GridSize; x++) {
+                        if (test_cells[x, y].MyPieceType == Piece.PieceType.King && test_cells[x, y].MyPieceColour == board.ColourToMove) {
+                            my_king_square = new Vector2Int(x, y);
+                        }
+                    }
+                }
 
                 if (opponent_responses.Any(response => response.TargetSquare == my_king_square)) {
                     //opponent can capture king - so last move was illegal
