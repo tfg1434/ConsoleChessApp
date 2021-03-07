@@ -10,12 +10,12 @@ namespace ConsoleChessApp {
         public const int GridSize = 8;
         public Piece[,] Cells = new Piece[GridSize, GridSize];
         public Piece.PieceColour ColourToMove = Piece.PieceColour.White;
-        public static readonly Vector2Int EnterMovePos = new(0, board_size_y + board_buffer_y * 2 + 2);
+        public static readonly Vector2Int EnterMovePos = new(0, board_size_y + board_buffer_y * 2 + 3);
 
         private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KBkq - 0 1";
         //cannot use const here because constants have to be compile time constants
-        private const int board_size_x = 32;
-        private const int board_size_y = 16;
+        private const int board_size_x = 32; //32 base size
+        private const int board_size_y = 16; //16
         private const int board_buffer_x = 3;
         private const int board_buffer_y = 1;
 
@@ -37,9 +37,18 @@ namespace ConsoleChessApp {
             ['q'] = Piece.PieceType.Queen,
         };
 
+        public bool JustDoubleMoved { get; private set; }
+
         public void Move(Move move) {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
+
+            //is this move a double move?
+            if (from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2) {
+                JustDoubleMoved = true;
+            } else {
+                JustDoubleMoved = false;
+            }
 
             //this move is en passant
             if (from.MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x) {
@@ -47,6 +56,7 @@ namespace ConsoleChessApp {
                 Piece behind = Cells[move.TargetSquare.x, move.TargetSquare.y + backward];
                 behind.MyPieceType = Piece.PieceType.None;
                 behind.MyPieceColour = Piece.PieceColour.None;
+
                 Console.SetCursorPosition(move.TargetSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
                         (move.TargetSquare.y + backward) * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
                 Console.Write(" ");
@@ -130,14 +140,14 @@ namespace ConsoleChessApp {
             //Chess board letters
             for (int i = 0; i < GridSize; i++) {
                 Console.SetCursorPosition(board_buffer_x + i * (board_size_x / GridSize) + (board_size_x / GridSize) / 2,
-                board_size_y + board_size_y / GridSize);
+                board_size_y + board_buffer_y * 2 + 1); //board_size_y + board_size_y / GridSize);
 
                 Console.Write(Utils.Alphabet[i]);
             }
             
             //Numbers
             for (int i = 1; i <= GridSize; i++) {
-                Console.SetCursorPosition(board_size_x + board_size_x / GridSize + 1,
+                Console.SetCursorPosition(board_size_x + board_buffer_x * 2 + 1,//board_size_x + board_size_x / GridSize + 1,
                     board_buffer_y + board_size_y + (board_size_y / GridSize) / 2 - (i * board_size_y / GridSize));
 
                 Console.Write(i);

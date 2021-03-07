@@ -15,7 +15,7 @@ namespace ConsoleChessApp {
                 Utils.ClearCurrentConsoleLine();
 
                 if (MoveGenerator.TryParse(out Move move, Console.ReadLine())) {
-                    List<Move> moves = MoveGenerator.GenerateMoves(board.Cells, board.ColourToMove);
+                    List<Move> moves = MoveGenerator.GenerateMoves(board);
                     moves = MoveGenerator.PruneIllegalMoves(moves, board);
 
                     if (moves.Contains(move)) {
