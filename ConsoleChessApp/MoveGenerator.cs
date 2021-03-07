@@ -143,10 +143,10 @@ namespace ConsoleChessApp {
                 }
 
                 //en passant capture
-                //issue with capturing on the opposite side of the en passant
+                //.
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].JustDoubleMoved && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour) {
-                    moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward), true));
+                    moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward)));
                 }
             }
         }

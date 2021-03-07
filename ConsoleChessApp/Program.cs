@@ -17,17 +17,10 @@ namespace ConsoleChessApp {
                 if (MoveGenerator.TryParse(out Move move, Console.ReadLine())) {
                     List<Move> moves = MoveGenerator.GenerateMoves(board.Cells, board.ColourToMove);
                     moves = MoveGenerator.PruneIllegalMoves(moves, board);
-                    bool found_move = false;
 
-                    foreach (Move curr_move in moves) {
-                        if (curr_move.StartSquare == move.StartSquare && curr_move.TargetSquare == move.TargetSquare) {
-                            found_move = true;
-                            board.Move(curr_move);
-                            break;
-                        }
-                    }
-
-                    if (!found_move) {
+                    if (moves.Contains(move)) {
+                        board.Move(move);
+                    } else {
                         Console.Write("illegal move!!!!");
                         Thread.Sleep(500);
                         Utils.ClearCurrentConsoleLine();

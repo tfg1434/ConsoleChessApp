@@ -41,8 +41,8 @@ namespace ConsoleChessApp {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
 
-            if (move.IsEnPassant) {
-                //this move is en passant
+            //this move is en passant
+            if (from.MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x) {
                 int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
                 Piece behind = Cells[move.TargetSquare.x, move.TargetSquare.y + backward];
                 behind.MyPieceType = Piece.PieceType.None;
