@@ -4,14 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     struct Move {
         public readonly Vector2Int StartSquare;
         public readonly Vector2Int TargetSquare;
+        public readonly bool IsEnPassant;
 
-        public Move(Vector2Int start_square, Vector2Int target_square) {
+        public Move(Vector2Int start_square, Vector2Int target_square, bool is_en_passant = false) {
             StartSquare = start_square;
             TargetSquare = target_square;
+            IsEnPassant = is_en_passant;
         }
     }
 }

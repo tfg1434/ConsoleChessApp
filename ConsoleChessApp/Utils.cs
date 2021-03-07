@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     static class Utils {
         public static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
 

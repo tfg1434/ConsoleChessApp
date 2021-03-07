@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Numerics;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     // Representation of 2D vectors and points.
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector2Int : IEquatable<Vector2Int> {

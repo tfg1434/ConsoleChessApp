@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Linq;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     static class MoveGenerator {
         //n, e, s, w, ne, se, nw, sw
         private static readonly int[,] sliding_offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 1, -1 }, { 1, 1 }, { -1, -1 }, { -1, 1 } };
@@ -41,9 +41,6 @@ namespace ShittyChessApp {
             Piece.PieceColour enemy_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
             Vector2Int my_king_square = default;
-
-            //Console.WriteLine($"x: {my_king_square.x} y: {my_king_square.y}");
-            Console.WriteLine(board.ColourToMove);
 
             foreach (Move move in moves) {
                 Piece[,] test_cells = board.SimulateMove(move);
@@ -143,6 +140,13 @@ namespace ShittyChessApp {
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y + forward);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType != Piece.PieceType.None && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour){
                     moves.Add(new Move(start_cell, target_cell));
+                }
+
+                //en passant capture
+                //issue with capturing on the opposite side of the en passant
+                target_cell = new Vector2Int(start_cell.x + side, start_cell.y);
+                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].JustDoubleMoved && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour) {
+                    moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward), true));
                 }
             }
         }

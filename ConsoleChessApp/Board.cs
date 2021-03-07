@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Linq;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     class Board {
         public const int GridSize = 8;
         public Piece[,] Cells = new Piece[GridSize, GridSize];
@@ -41,12 +41,29 @@ namespace ShittyChessApp {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
 
-            to.MyPieceType = from.MyPieceType;
-            to.MyPieceColour = from.MyPieceColour;
+            if (move.IsEnPassant) {
+                //this move is en passant
+                int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
+                Piece behind = Cells[move.TargetSquare.x, move.TargetSquare.y + backward];
+                behind.MyPieceType = Piece.PieceType.None;
+                behind.MyPieceColour = Piece.PieceColour.None;
+                Console.SetCursorPosition(move.TargetSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
+                        (move.TargetSquare.y + backward) * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
+                Console.Write(" ");
 
-            from.MyPieceType = Piece.PieceType.None;
-            from.MyPieceColour = Piece.PieceColour.None;
+                to.MyPieceType = from.MyPieceType;
+                to.MyPieceColour = from.MyPieceColour;
 
+                from.MyPieceType = Piece.PieceType.None;
+                from.MyPieceColour = Piece.PieceColour.None;
+
+            } else { //it's a normal move
+                to.MyPieceType = from.MyPieceType;
+                to.MyPieceColour = from.MyPieceColour;
+
+                from.MyPieceType = Piece.PieceType.None;
+                from.MyPieceColour = Piece.PieceColour.None;
+            }
             ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             to.CanDoubleMove = false;
 

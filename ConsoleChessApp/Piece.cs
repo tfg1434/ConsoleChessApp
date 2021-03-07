@@ -2,11 +2,27 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ShittyChessApp {
+namespace ConsoleChessApp {
     class Piece {
         public PieceType MyPieceType { get; set; } = PieceType.None;
         public PieceColour MyPieceColour { get; set; } = PieceColour.None;
-        public bool CanDoubleMove { get; set; } = true;
+
+        //backing field for CanDoubleMove (to avoid infinite recursion)
+        private bool _can_double_move = true;
+
+        public bool CanDoubleMove {
+            get { 
+                return _can_double_move;
+            }
+            set {
+                if (_can_double_move != value) {
+                    JustDoubleMoved = true;
+                }
+
+                _can_double_move = value;
+            } 
+        }
+        public bool JustDoubleMoved { get; set; } = false;
 
         public bool IsSlidingPiece => MyPieceType == PieceType.Bishop || MyPieceType == PieceType.Rook || MyPieceType == PieceType.Queen;
 
@@ -29,7 +45,7 @@ namespace ShittyChessApp {
         public Piece(PieceType type, PieceColour colour, bool can_double_move = true) {
             MyPieceType = type;
             MyPieceColour = colour;
-            CanDoubleMove = can_double_move;
+            _can_double_move = can_double_move;
         }
     }
 }
