@@ -11,6 +11,7 @@ namespace ConsoleChessApp {
 
             while (true) {
                 Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
+                Utils.ClearCurrentConsoleLine();
                 Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
                 Utils.ClearCurrentConsoleLine();
 

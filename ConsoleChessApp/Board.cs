@@ -13,9 +13,8 @@ namespace ConsoleChessApp {
         public static readonly Vector2Int EnterMovePos = new(0, board_size_y + board_buffer_y * 2 + 3);
 
         private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KBkq - 0 1";
-        //cannot use const here because constants have to be compile time constants
-        private const int board_size_x = 32; //32 base size
-        private const int board_size_y = 16; //16
+        private const int board_size_x = 64; //32 base size
+        private const int board_size_y = 32; //16
         private const int board_buffer_x = 3;
         private const int board_buffer_y = 1;
 
@@ -37,43 +36,64 @@ namespace ConsoleChessApp {
             ['q'] = Piece.PieceType.Queen,
         };
 
-        public bool JustDoubleMoved { get; private set; }
-
         public void Move(Move move) {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
 
             //is this move a double move?
             if (from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2) {
-                JustDoubleMoved = true;
-            } else {
-                JustDoubleMoved = false;
+                to.JustDoubleMoved = true;
             }
 
             //this move is en passant
-            if (from.MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x) {
-                int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
-                Piece behind = Cells[move.TargetSquare.x, move.TargetSquare.y + backward];
-                behind.MyPieceType = Piece.PieceType.None;
-                behind.MyPieceColour = Piece.PieceColour.None;
+            int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
+            var behind_vec = new Vector2Int(move.TargetSquare.x, move.TargetSquare.y + backward);
+
+            //Console.WriteLine($"JustDoubleMoved: {Cells[behind_vec.x, behind_vec.y].JustDoubleMoved}");
+            if (InRange(behind_vec) && Cells[behind_vec.x, behind_vec.y].MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x && Cells[behind_vec.x, behind_vec.y].JustDoubleMoved) {
+                Cells[behind_vec.x, behind_vec.y].MyPieceType = Piece.PieceType.None;
+                Cells[behind_vec.x, behind_vec.y].MyPieceColour = Piece.PieceColour.None;
 
                 Console.SetCursorPosition(move.TargetSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
                         (move.TargetSquare.y + backward) * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
                 Console.Write(" ");
-
-                to.MyPieceType = from.MyPieceType;
-                to.MyPieceColour = from.MyPieceColour;
-
-                from.MyPieceType = Piece.PieceType.None;
-                from.MyPieceColour = Piece.PieceColour.None;
-
-            } else { //it's a normal move
-                to.MyPieceType = from.MyPieceType;
-                to.MyPieceColour = from.MyPieceColour;
-
-                from.MyPieceType = Piece.PieceType.None;
-                from.MyPieceColour = Piece.PieceColour.None;
             }
+            
+            //if it's not a double move
+            if (!(from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2)) {
+                foreach (Piece piece in Cells) {
+                    piece.JustDoubleMoved = false;
+                }
+            }
+
+            to.MyPieceType = from.MyPieceType;
+            to.MyPieceColour = from.MyPieceColour;
+            from.MyPieceType = Piece.PieceType.None;
+            from.MyPieceColour = Piece.PieceColour.None;
+
+            //it's a fuckin pawn promotion
+            if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn) {
+                Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
+                Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
+                Utils.ClearCurrentConsoleLine();
+
+                Piece.PieceType promote_to;
+                while (true) {
+                    try {
+                        promote_to = char_to_piece_type[char.Parse(Console.ReadLine())];
+
+                        if (promote_to != Piece.PieceType.King && promote_to != Piece.PieceType.Pawn) {
+                            break;
+                        }
+                    } catch {
+                        Utils.ClearCurrentConsoleLine();
+                        continue;
+                    }
+                }
+
+                to.MyPieceType = promote_to;
+            }
+
             ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             to.CanDoubleMove = false;
 

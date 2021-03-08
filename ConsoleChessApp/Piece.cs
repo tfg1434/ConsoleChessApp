@@ -9,6 +9,8 @@ namespace ConsoleChessApp {
 
         public bool CanDoubleMove { get; set; } = true;
 
+        public bool JustDoubleMoved { get; set; }
+
         public bool IsSlidingPiece => MyPieceType == PieceType.Bishop || MyPieceType == PieceType.Rook || MyPieceType == PieceType.Queen;
 
         public enum PieceType : int {

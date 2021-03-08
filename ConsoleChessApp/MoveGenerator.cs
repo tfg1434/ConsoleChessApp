@@ -12,7 +12,7 @@ namespace ConsoleChessApp {
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
         private static List<Move> moves;
 
-        public static List<Move> GenerateMoves(Piece[,] cells, Piece.PieceColour colour_to_move, bool just_double_moved) {
+        public static List<Move> GenerateMoves(Piece[,] cells, Piece.PieceColour colour_to_move) {
             moves = new List<Move>();
 
             for (int start_x = 0; start_x < Board.GridSize; start_x++) {
@@ -24,7 +24,7 @@ namespace ConsoleChessApp {
                         if (piece.IsSlidingPiece) {
                             _GenerateSlidingMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.Pawn) {
-                            _GeneratePawnMoves(start_cell, cells, just_double_moved);
+                            _GeneratePawnMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.Knight) {
                             _GenerateKnightMoves(start_cell, cells);
                         } else if (piece.MyPieceType == Piece.PieceType.King) {
@@ -38,7 +38,7 @@ namespace ConsoleChessApp {
         }
 
         public static List<Move> GenerateMoves(Board board) {
-            return GenerateMoves(board.Cells, board.ColourToMove, board.JustDoubleMoved);
+            return GenerateMoves(board.Cells, board.ColourToMove);
         }
 
         public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
@@ -48,7 +48,7 @@ namespace ConsoleChessApp {
 
             foreach (Move move in moves) {
                 Piece[,] test_cells = board.SimulateMove(move);
-                List<Move> opponent_responses = GenerateMoves(test_cells, enemy_colour, board.JustDoubleMoved);
+                List<Move> opponent_responses = GenerateMoves(test_cells, enemy_colour);
 
                 for (var y = 0; y < Board.GridSize; y++) {
                     for (var x = 0; x < Board.GridSize; x++) {
@@ -118,7 +118,7 @@ namespace ConsoleChessApp {
             }
         }
 
-        private static void _GeneratePawnMoves(Vector2Int start_cell, Piece[,] cells, bool just_double_moved) {
+        private static void _GeneratePawnMoves(Vector2Int start_cell, Piece[,] cells) {
             Piece piece = cells[start_cell.x, start_cell.y];
 
             int forward = piece.MyPieceColour == Piece.PieceColour.White ? -1 : 1;
@@ -149,7 +149,7 @@ namespace ConsoleChessApp {
                 //en passant capture
                 //.
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y);
-                if (Board.InRange(target_cell) && just_double_moved && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour) {
+                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].JustDoubleMoved && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour) {
                     moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward)));
                 }
             }
