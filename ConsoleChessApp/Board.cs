@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         public const int GridSize = 8;
         public Piece[,] Cells = new Piece[GridSize, GridSize];
-        public Piece.PieceColour ColourToMove = Piece.PieceColour.White;
+        public Piece.PieceColour ColourToMove;
         public static readonly Vector2Int EnterMovePos = new(0, board_size_y + board_buffer_y * 2 + 3);
 
         private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KBkq - 0 1";
@@ -117,16 +117,16 @@ namespace ConsoleChessApp {
         }
 
         //simulates a move and returns Cells, but does not actually change the board.
-        public static Piece[,] SimulateMove(Move move, Piece[,] cells) {
-            Piece[,] new_cells = new Piece[GridSize, GridSize];
+        public static Board SimulateMove(Move move, Board board) {
+            var new_board = new Board(board.ColourToMove);
             for (int y = 0; y < GridSize; y++) {
                 for (int x = 0; x < GridSize; x++) {
-                    new_cells[x, y] = new Piece(cells[x, y].MyPieceType, cells[x, y].MyPieceColour, cells[x, y].CanDoubleMove);
+                    new_board.Cells[x, y] = new Piece(board.Cells[x, y].MyPieceType, board.Cells[x, y].MyPieceColour, board.Cells[x, y].CanDoubleMove);
                 }
             }
 
-            Piece to = new_cells[move.TargetSquare.x, move.TargetSquare.y];
-            Piece from = new_cells[move.StartSquare.x, move.StartSquare.y];
+            Piece to = new_board.Cells[move.TargetSquare.x, move.TargetSquare.y];
+            Piece from = new_board.Cells[move.StartSquare.x, move.StartSquare.y];
 
             to.MyPieceType = from.MyPieceType;
             to.MyPieceColour = from.MyPieceColour;
@@ -135,12 +135,12 @@ namespace ConsoleChessApp {
             from.MyPieceColour = Piece.PieceColour.None;
             to.CanDoubleMove = false;
 
-            return new_cells;
+            return new_board;
         }
 
-        public bool IsSquareAttacked(Vector2Int square, Piece.PieceColour colour_attacking, Piece[,] cells) {
-            List<Move> moves = MoveGenerator.GenerateMoves(cells, colour_attacking);
-            moves = MoveGenerator.PruneIllegalMoves(moves, cells, colour_attacking);
+        public bool IsSquareAttacked(Vector2Int square, Board board, Piece.PieceColour attacking_colour) {
+            List<Move> moves = MoveGenerator.GenerateMoves(board, attacking_colour);
+            moves = MoveGenerator.PruneIllegalMoves(moves, board);
 
             if (moves.Any(move => move.TargetSquare == square)) {
                 return true;
@@ -149,64 +149,64 @@ namespace ConsoleChessApp {
             return false;
         }
 
-        public bool TryCastleMove(string notation) {
-            //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
+        //public bool TryCastleMove(string notation) {
+        //    //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
 
-            Vector2Int king_start_square = default;
-            for (int y = 0; y < GridSize; y++) {
-                for (int x = 0; x < GridSize; x++) {
-                    Piece piece = Cells[x, y];
-                    if (piece.MyPieceType == Piece.PieceType.King) {
-                        king_start_square = new Vector2Int(x, y);
-                    }
-                }
-            }
+        //    Vector2Int king_start_square = default;
+        //    for (int y = 0; y < GridSize; y++) {
+        //        for (int x = 0; x < GridSize; x++) {
+        //            Piece piece = Cells[x, y];
+        //            if (piece.MyPieceType == Piece.PieceType.King) {
+        //                king_start_square = new Vector2Int(x, y);
+        //            }
+        //        }
+        //    }
 
-            if (notation == "0-0") {
-                for (int y = 0; y < GridSize; y++) {
-                    for (int x = 0; x < GridSize; x++) {
-                        Piece piece = Cells[x, y];
-                        Piece king = Cells[king_start_square.x, king_start_square.y];
+        //    if (notation == "0-0") {
+        //        for (int y = 0; y < GridSize; y++) {
+        //            for (int x = 0; x < GridSize; x++) {
+        //                Piece piece = Cells[x, y];
+        //                Piece king = Cells[king_start_square.x, king_start_square.y];
 
-                        if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == ColourToMove) {
-                            var opponent_colour = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+        //                if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == ColourToMove) {
+        //                    var opponent_colour = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
 
-                            var rook_start_square = new Vector2Int(x, y);
-                            bool passing_through_check = false;
-                            bool piece_in_way = false;
+        //                    var rook_start_square = new Vector2Int(x, y);
+        //                    bool passing_through_check = false;
+        //                    bool piece_in_way = false;
 
-                            for (var i = 0; i < 3; i++) {
-                                if (IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), opponent_colour, Cells)) {
-                                    passing_through_check = true;
-                                }
-                            }
+        //                    for (var i = 0; i < 3; i++) {
+        //                        if (IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), opponent_colour, Cells)) {
+        //                            passing_through_check = true;
+        //                        }
+        //                    }
 
-                            for (var i = 1; i < 3; i++) {
-                                if (Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
-                                    piece_in_way = true;
-                                }
-                            }
+        //                    for (var i = 1; i < 3; i++) {
+        //                        if (Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
+        //                            piece_in_way = true;
+        //                        }
+        //                    }
 
-                            if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
-                                !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+        //                    if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
+        //                        !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
 
-                                var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
-                                var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
+        //                        var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
+        //                        var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
 
-                                Move(new Move(rook_start_square, rook_target_square), false);
-                                Move(new Move(king_start_square, king_target_square), true);
-                                return true;
-                            }
-                        }
-                    }
-                }
+        //                        Move(new Move(rook_start_square, rook_target_square), false);
+        //                        Move(new Move(king_start_square, king_target_square), true);
+        //                        return true;
+        //                    }
+        //                }
+        //            }
+        //        }
 
-            } else if (notation == "0-0-0") {
+        //    } else if (notation == "0-0-0") {
 
-            }
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         public void Draw() {
             #region Pieces
@@ -314,13 +314,15 @@ namespace ConsoleChessApp {
             return pos.x >= 0 && pos.x < GridSize && pos.y >= 0 && pos.y < GridSize;
         }
 
-        public Board() {
+        public Board(Piece.PieceColour colour_to_move=Piece.PieceColour.White) {
             for (int y = 0; y < Cells.GetLength(0); y++) {
                 for (int x = 0; x < Cells.GetLength(1); x++) {
                     Cells[x, y] = new Piece(Piece.PieceType.None, Piece.PieceColour.None);
                 }
             }
             LoadFromFen(start_fen);
+
+            ColourToMove = colour_to_move;
         }
     }
 }
