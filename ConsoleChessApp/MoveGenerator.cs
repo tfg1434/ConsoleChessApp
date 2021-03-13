@@ -41,18 +41,18 @@ namespace ConsoleChessApp {
             return GenerateMoves(board.Cells, board.ColourToMove);
         }
 
-        public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
-            Piece.PieceColour enemy_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+        public static List<Move> PruneIllegalMoves(List<Move> moves, Piece[,] cells, Piece.PieceColour colour_to_move) {
+            Piece.PieceColour enemy_colour = colour_to_move == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
             Vector2Int my_king_square = default;
 
             foreach (Move move in moves) {
-                Piece[,] test_cells = board.SimulateMove(move);
+                Piece[,] test_cells = Board.SimulateMove(move, cells);
                 List<Move> opponent_responses = GenerateMoves(test_cells, enemy_colour);
 
                 for (var y = 0; y < Board.GridSize; y++) {
                     for (var x = 0; x < Board.GridSize; x++) {
-                        if (test_cells[x, y].MyPieceType == Piece.PieceType.King && test_cells[x, y].MyPieceColour == board.ColourToMove) {
+                        if (test_cells[x, y].MyPieceType == Piece.PieceType.King && test_cells[x, y].MyPieceColour == colour_to_move) {
                             my_king_square = new Vector2Int(x, y);
                         }
                     }
@@ -66,6 +66,10 @@ namespace ConsoleChessApp {
             }
 
             return pruned_moves;
+        }
+
+        public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
+            return PruneIllegalMoves(moves, board.Cells, board.ColourToMove);
         }
 
         private static int _GetSquaresToEdge(Vector2Int cell, int dir_offset_index) {
@@ -186,9 +190,8 @@ namespace ConsoleChessApp {
             }
         }
 
-        public static bool TryParse(out Move move, string notation) { //see discord chat for out
+        public static bool TryParseMove(out Move move, string notation) {
             Match match =  Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$", RegexOptions.IgnoreCase);
-
 
             if (match.Success) {
                 move = new Move(

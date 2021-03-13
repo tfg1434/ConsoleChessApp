@@ -36,7 +36,7 @@ namespace ConsoleChessApp {
             ['q'] = Piece.PieceType.Queen,
         };
 
-        public void Move(Move move) {
+        public void Move(Move move, bool change_colour_to_move=true) {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
 
@@ -68,8 +68,10 @@ namespace ConsoleChessApp {
 
             to.MyPieceType = from.MyPieceType;
             to.MyPieceColour = from.MyPieceColour;
+            to.HasMovedBefore = true;
             from.MyPieceType = Piece.PieceType.None;
             from.MyPieceColour = Piece.PieceColour.None;
+            from.HasMovedBefore = false;
 
             //it's a fuckin pawn promotion
             if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn) {
@@ -94,7 +96,9 @@ namespace ConsoleChessApp {
                 to.MyPieceType = promote_to;
             }
 
-            ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+            if (change_colour_to_move) {
+                ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+            }
             to.CanDoubleMove = false;
 
             Console.ForegroundColor = ConsoleColor.Green;
@@ -113,16 +117,16 @@ namespace ConsoleChessApp {
         }
 
         //simulates a move and returns Cells, but does not actually change the board.
-        public Piece[,] SimulateMove(Move move) {
-            Piece[,] cells = new Piece[GridSize, GridSize];
+        public static Piece[,] SimulateMove(Move move, Piece[,] cells) {
+            Piece[,] new_cells = new Piece[GridSize, GridSize];
             for (int y = 0; y < GridSize; y++) {
                 for (int x = 0; x < GridSize; x++) {
-                    cells[x, y] = new Piece(Cells[x, y].MyPieceType, Cells[x, y].MyPieceColour, Cells[x, y].CanDoubleMove);
+                    new_cells[x, y] = new Piece(cells[x, y].MyPieceType, cells[x, y].MyPieceColour, cells[x, y].CanDoubleMove);
                 }
             }
 
-            Piece to = cells[move.TargetSquare.x, move.TargetSquare.y];
-            Piece from = cells[move.StartSquare.x, move.StartSquare.y];
+            Piece to = new_cells[move.TargetSquare.x, move.TargetSquare.y];
+            Piece from = new_cells[move.StartSquare.x, move.StartSquare.y];
 
             to.MyPieceType = from.MyPieceType;
             to.MyPieceColour = from.MyPieceColour;
@@ -131,7 +135,77 @@ namespace ConsoleChessApp {
             from.MyPieceColour = Piece.PieceColour.None;
             to.CanDoubleMove = false;
 
-            return cells;
+            return new_cells;
+        }
+
+        public bool IsSquareAttacked(Vector2Int square, Piece.PieceColour colour_attacking, Piece[,] cells) {
+            List<Move> moves = MoveGenerator.GenerateMoves(cells, colour_attacking);
+            moves = MoveGenerator.PruneIllegalMoves(moves, cells, colour_attacking);
+
+            if (moves.Any(move => move.TargetSquare == square)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryCastleMove(string notation) {
+            //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
+
+            Vector2Int king_start_square = default;
+            for (int y = 0; y < GridSize; y++) {
+                for (int x = 0; x < GridSize; x++) {
+                    Piece piece = Cells[x, y];
+                    if (piece.MyPieceType == Piece.PieceType.King) {
+                        king_start_square = new Vector2Int(x, y);
+                    }
+                }
+            }
+
+            if (notation == "0-0") {
+                for (int y = 0; y < GridSize; y++) {
+                    for (int x = 0; x < GridSize; x++) {
+                        Piece piece = Cells[x, y];
+                        Piece king = Cells[king_start_square.x, king_start_square.y];
+
+                        if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == ColourToMove) {
+                            var opponent_colour = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+
+                            var rook_start_square = new Vector2Int(x, y);
+                            bool passing_through_check = false;
+                            bool piece_in_way = false;
+
+                            for (var i = 0; i < 3; i++) {
+                                if (IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), opponent_colour, Cells)) {
+                                    passing_through_check = true;
+                                }
+                            }
+
+                            for (var i = 1; i < 3; i++) {
+                                if (Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
+                                    piece_in_way = true;
+                                }
+                            }
+
+                            if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
+                                !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+
+                                var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
+                                var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
+
+                                Move(new Move(rook_start_square, rook_target_square), false);
+                                Move(new Move(king_start_square, king_target_square), true);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            } else if (notation == "0-0-0") {
+
+            }
+
+            return false;
         }
 
         public void Draw() {

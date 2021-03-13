@@ -6,9 +6,8 @@ namespace ConsoleChessApp {
     class Piece {
         public PieceType MyPieceType { get; set; } = PieceType.None;
         public PieceColour MyPieceColour { get; set; } = PieceColour.None;
-
+        public bool HasMovedBefore { get; set; } = false;
         public bool CanDoubleMove { get; set; } = true;
-
         public bool JustDoubleMoved { get; set; }
 
         public bool IsSlidingPiece => MyPieceType == PieceType.Bishop || MyPieceType == PieceType.Rook || MyPieceType == PieceType.Queen;

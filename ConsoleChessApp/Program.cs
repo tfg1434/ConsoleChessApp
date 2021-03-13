@@ -15,7 +15,9 @@ namespace ConsoleChessApp {
                 Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
                 Utils.ClearCurrentConsoleLine();
 
-                if (MoveGenerator.TryParse(out Move move, Console.ReadLine())) {
+                string input = Console.ReadLine();
+
+                if (MoveGenerator.TryParseMove(out Move move, input)) {
                     List<Move> moves = MoveGenerator.GenerateMoves(board);
                     moves = MoveGenerator.PruneIllegalMoves(moves, board);
 
@@ -25,8 +27,16 @@ namespace ConsoleChessApp {
                         Console.Write("illegal move!!!!");
                         Thread.Sleep(500);
                         Utils.ClearCurrentConsoleLine();
-
+                        continue;
                     }
+                } else if (board.TryCastleMove(input)) {
+
+                } else if (input == "0-0" || input == "0-0-0") {
+                    Console.Write("illegal move!!!!");
+                    Console.Write(board.ColourToMove);
+                    Thread.Sleep(500);
+                    Utils.ClearCurrentConsoleLine();
+                    continue;
                 } else {
                     Console.Write("this is not a real move!!!");
                     Thread.Sleep(500);
