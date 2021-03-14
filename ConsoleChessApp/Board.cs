@@ -7,16 +7,9 @@ using System.Linq;
 
 namespace ConsoleChessApp {
     class Board {
-        public const int GridSize = 8;
-        public Piece[,] Cells = new Piece[GridSize, GridSize];
-        public Piece.PieceColour ColourToMove;
-        public static readonly Vector2Int EnterMovePos = new(0, board_size_y + board_buffer_y * 2 + 3);
-
+        private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
+        private static readonly Vector2Int board_buffer = new(3, 1);
         private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KBkq - 0 1";
-        private const int board_size_x = 64; //32 base size
-        private const int board_size_y = 32; //16
-        private const int board_buffer_x = 3;
-        private const int board_buffer_y = 1;
 
         private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
             [Piece.PieceType.None] = ' ',
@@ -36,6 +29,11 @@ namespace ConsoleChessApp {
             ['q'] = Piece.PieceType.Queen,
         };
 
+        public const int GridSize = 8;
+        public Piece[,] Cells = new Piece[GridSize, GridSize];
+        public Piece.PieceColour ColourToMove;
+        public static readonly Vector2Int EnterMovePos = new(0, board_size.y + board_buffer.y * 2 + 3);
+
         public void Move(Move move, bool change_colour_to_move=true) {
             Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
             Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
@@ -54,8 +52,8 @@ namespace ConsoleChessApp {
                 Cells[behind_vec.x, behind_vec.y].MyPieceType = Piece.PieceType.None;
                 Cells[behind_vec.x, behind_vec.y].MyPieceColour = Piece.PieceColour.None;
 
-                Console.SetCursorPosition(move.TargetSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
-                        (move.TargetSquare.y + backward) * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
+                Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                        (move.TargetSquare.y + backward) * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
                 Console.Write(" ");
             }
             
@@ -102,11 +100,11 @@ namespace ConsoleChessApp {
             to.CanDoubleMove = false;
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.SetCursorPosition(move.StartSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
-                        move.StartSquare.y * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
+            Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                        move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
             Console.Write(" ");
-            Console.SetCursorPosition(move.TargetSquare.x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
-                        move.TargetSquare.y * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
+            Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                        move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
             char print = piece_type_to_char[to.MyPieceType];
             if (to.MyPieceColour == Piece.PieceColour.White) {
                 print = char.ToUpper(print);
@@ -140,7 +138,6 @@ namespace ConsoleChessApp {
 
         public bool IsSquareAttacked(Vector2Int square, Board board, Piece.PieceColour attacking_colour) {
             List<Move> moves = MoveGenerator.GenerateMoves(board, attacking_colour);
-            moves = MoveGenerator.PruneIllegalMoves(moves, board);
 
             if (moves.Any(move => move.TargetSquare == square)) {
                 return true;
@@ -149,73 +146,14 @@ namespace ConsoleChessApp {
             return false;
         }
 
-        //public bool TryCastleMove(string notation) {
-        //    //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
-
-        //    Vector2Int king_start_square = default;
-        //    for (int y = 0; y < GridSize; y++) {
-        //        for (int x = 0; x < GridSize; x++) {
-        //            Piece piece = Cells[x, y];
-        //            if (piece.MyPieceType == Piece.PieceType.King) {
-        //                king_start_square = new Vector2Int(x, y);
-        //            }
-        //        }
-        //    }
-
-        //    if (notation == "0-0") {
-        //        for (int y = 0; y < GridSize; y++) {
-        //            for (int x = 0; x < GridSize; x++) {
-        //                Piece piece = Cells[x, y];
-        //                Piece king = Cells[king_start_square.x, king_start_square.y];
-
-        //                if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == ColourToMove) {
-        //                    var opponent_colour = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
-
-        //                    var rook_start_square = new Vector2Int(x, y);
-        //                    bool passing_through_check = false;
-        //                    bool piece_in_way = false;
-
-        //                    for (var i = 0; i < 3; i++) {
-        //                        if (IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), opponent_colour, Cells)) {
-        //                            passing_through_check = true;
-        //                        }
-        //                    }
-
-        //                    for (var i = 1; i < 3; i++) {
-        //                        if (Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
-        //                            piece_in_way = true;
-        //                        }
-        //                    }
-
-        //                    if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
-        //                        !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-
-        //                        var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
-        //                        var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
-
-        //                        Move(new Move(rook_start_square, rook_target_square), false);
-        //                        Move(new Move(king_start_square, king_target_square), true);
-        //                        return true;
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //    } else if (notation == "0-0-0") {
-
-        //    }
-
-        //    return false;
-        //}
-
         public void Draw() {
             #region Pieces
             Console.ForegroundColor = ConsoleColor.Green;
 
             for (int y = 0; y < Cells.GetLength(0); y++) {
                 for (int x = 0; x < Cells.GetLength(1); x++) {
-                    Console.SetCursorPosition(x * (board_size_x / GridSize) + board_buffer_x + (board_size_x / GridSize) / 2,
-                        y * (board_size_y) / GridSize + board_buffer_y + (board_size_y / GridSize) / 2);
+                    Console.SetCursorPosition(x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                        y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
 
                     char print = piece_type_to_char[Cells[x, y].MyPieceType];
 
@@ -233,25 +171,25 @@ namespace ConsoleChessApp {
             //Letters on bottom, numbers on right
             //Chess board letters
             for (int i = 0; i < GridSize; i++) {
-                Console.SetCursorPosition(board_buffer_x + i * (board_size_x / GridSize) + (board_size_x / GridSize) / 2,
-                board_size_y + board_buffer_y * 2 + 1); //board_size_y + board_size_y / GridSize);
+                Console.SetCursorPosition(board_buffer.x + i * (board_size.x / GridSize) + (board_size.x / GridSize) / 2,
+                board_size.y + board_buffer.y * 2 + 1); //board_size.y + board_size.y / GridSize);
 
                 Console.Write(Utils.Alphabet[i]);
             }
             
             //Numbers
             for (int i = 1; i <= GridSize; i++) {
-                Console.SetCursorPosition(board_size_x + board_buffer_x * 2 + 1,//board_size_x + board_size_x / GridSize + 1,
-                    board_buffer_y + board_size_y + (board_size_y / GridSize) / 2 - (i * board_size_y / GridSize));
+                Console.SetCursorPosition(board_size.x + board_buffer.x * 2 + 1,//board_size.x + board_size.x / GridSize + 1,
+                    board_buffer.y + board_size.y + (board_size.y / GridSize) / 2 - (i * board_size.y / GridSize));
 
                 Console.Write(i);
             }
 
             //Horizontal
             for (int i = 0; i <= GridSize; i++) {
-                for (int j = 0; j <= board_size_x; j++) {
-                    Console.SetCursorPosition(j + board_buffer_x, i * (board_size_y / GridSize) + board_buffer_y);
-                    if (j % (board_size_x / GridSize) == 0) {
+                for (int j = 0; j <= board_size.x; j++) {
+                    Console.SetCursorPosition(j + board_buffer.x, i * (board_size.y / GridSize) + board_buffer.y);
+                    if (j % (board_size.x / GridSize) == 0) {
                         Console.Write("+");
                     } else {
                         Console.Write("-");
@@ -261,9 +199,9 @@ namespace ConsoleChessApp {
 
             //Vertical
             for (int i = 0; i <= GridSize; i++) {
-                for (int j = 0; j <= board_size_y; j++) {
-                    Console.SetCursorPosition(board_buffer_x + i * (board_size_x / GridSize), j + board_buffer_y);
-                    if (j % (board_size_y / GridSize) == 0) {
+                for (int j = 0; j <= board_size.y; j++) {
+                    Console.SetCursorPosition(board_buffer.x + i * (board_size.x / GridSize), j + board_buffer.y);
+                    if (j % (board_size.y / GridSize) == 0) {
                         Console.Write("+");
                     } else {
                         Console.Write("|");

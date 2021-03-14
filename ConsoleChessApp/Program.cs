@@ -9,8 +9,6 @@ namespace ConsoleChessApp {
             var board = new Board();
             board.Draw();
 
-            //throw new Exception("need to somehow represent the castle move in the list of moves. probably add an if/else in the parse method and a CastleMove struct. TryCastleMove method can generate the castle moves!");
-
             while (true) {
                 Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
                 Utils.ClearCurrentConsoleLine();
@@ -20,8 +18,7 @@ namespace ConsoleChessApp {
                 string input = Console.ReadLine();
 
                 if (MoveGenerator.TryParseMove(out Move move, input)) {
-                    List<Move> moves = MoveGenerator.GenerateMoves(board, board.ColourToMove);
-                    moves = MoveGenerator.PruneIllegalMoves(moves, board);
+                    List<Move> moves = MoveGenerator.GenerateMoves(board);
 
                     if (moves.Contains(move)) {
                         board.Move(move);

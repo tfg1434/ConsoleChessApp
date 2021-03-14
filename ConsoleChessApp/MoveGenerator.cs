@@ -71,7 +71,7 @@ namespace ConsoleChessApp {
             return castle_moves;
         }
 
-        public static List<Move> GenerateMoves(Board board, Piece.PieceColour colour_to_move) {
+        public static List<Move> GeneratePseudoLegalMoves(Board board, Piece.PieceColour colour_to_move) {
             moves = new List<Move>();
 
             for (int start_x = 0; start_x < Board.GridSize; start_x++) {
@@ -96,14 +96,15 @@ namespace ConsoleChessApp {
             return moves;
         }
 
-        public static List<Move> PruneIllegalMoves(List<Move> moves, Board board) {
-            Piece.PieceColour enemy_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+        public static List<Move> GenerateMoves(Board board, Piece.PieceColour colour) {
+            moves = GeneratePseudoLegalMoves(board, colour);
+            Piece.PieceColour enemy_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
             Vector2Int my_king_square = default;
 
             foreach (Move move in moves) {
                 Board test_board = Board.SimulateMove(move, board);
-                List<Move> opponent_responses = GenerateMoves(board, enemy_colour);
+                List<Move> opponent_responses = GeneratePseudoLegalMoves(board, enemy_colour);
 
                 for (var y = 0; y < Board.GridSize; y++) {
                     for (var x = 0; x < Board.GridSize; x++) {
@@ -121,6 +122,11 @@ namespace ConsoleChessApp {
             }
 
             return pruned_moves;
+        }
+
+        public static List<Move> GenerateMoves(Board board) {
+            Piece.PieceColour colour = board.ColourToMove;
+            return GenerateMoves(board, colour);
         }
         
         private static int _GetSquaresToEdge(Vector2Int cell, int dir_offset_index) {
