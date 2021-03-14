@@ -10,12 +10,11 @@ namespace ConsoleChessApp {
         private static readonly int[,] sliding_offsets = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { 1, -1 }, { 1, 1 }, { -1, -1 }, { -1, 1 } };
         //north-left, north-right, east-up, east-down, south-right, south-left, west-down, west-up
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
-        private static List<Move> moves;
-        private static List<CastleMove> castle_moves;
 
         public static List<CastleMove> GenerateCastleMoves(string notation, Board board) {
+            var moves = new List<CastleMove>();
+
             //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
-            castle_moves = new List<CastleMove>();
             var opponent_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
 
             Vector2Int king_start_square = default;
@@ -61,7 +60,7 @@ namespace ConsoleChessApp {
                                 var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
                                 var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
 
-                                castle_moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
+                                moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
                             }
                         }
                     }
@@ -93,33 +92,8 @@ namespace ConsoleChessApp {
                                 var rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
                                 var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
 
-                                castle_moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
+                                moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
                             }
-                        }
-                    }
-                }
-            }
-
-            return castle_moves;
-        }
-
-        public static List<Move> GeneratePseudoLegalMoves(Board board, Piece.PieceColour colour_to_move) {
-            moves = new List<Move>();
-
-            for (int start_x = 0; start_x < Board.GridSize; start_x++) {
-                for (int start_y = 0; start_y < Board.GridSize; start_y++) {
-                    Piece piece = board.Cells[start_x, start_y];
-                    var start_cell = new Vector2Int(start_x, start_y);
-
-                    if (piece.MyPieceColour == colour_to_move) {
-                        if (piece.IsSlidingPiece) {
-                            _GenerateSlidingMoves(start_cell, board.Cells);
-                        } else if (piece.MyPieceType == Piece.PieceType.Pawn) {
-                            _GeneratePawnMoves(start_cell, board.Cells);
-                        } else if (piece.MyPieceType == Piece.PieceType.Knight) {
-                            _GenerateKnightMoves(start_cell, board.Cells);
-                        } else if (piece.MyPieceType == Piece.PieceType.King) {
-                            _GenerateKingMoves(start_cell, board.Cells);
                         }
                     }
                 }
@@ -128,8 +102,38 @@ namespace ConsoleChessApp {
             return moves;
         }
 
+        public static List<Move> GeneratePseudoLegalMoves(Board board, Piece.PieceColour colour_to_move) {
+            var moves = new List<Move>();
+
+            for (int start_x = 0; start_x < Board.GridSize; start_x++) {
+                for (int start_y = 0; start_y < Board.GridSize; start_y++) {
+                    Piece piece = board.Cells[start_x, start_y];
+                    var start_cell = new Vector2Int(start_x, start_y);
+
+                    var this_piece_moves = new List<Move>();
+                    if (piece.MyPieceColour == colour_to_move) {
+                        if (piece.IsSlidingPiece) {
+                            this_piece_moves = _GenerateSlidingMoves(start_cell, board.Cells);
+                        } else if (piece.MyPieceType == Piece.PieceType.Pawn) {
+                            this_piece_moves = _GeneratePawnMoves(start_cell, board.Cells);
+                        } else if (piece.MyPieceType == Piece.PieceType.Knight) {
+                            this_piece_moves = _GenerateKnightMoves(start_cell, board.Cells);
+                        } else if (piece.MyPieceType == Piece.PieceType.King) {
+                            this_piece_moves = _GenerateKingMoves(start_cell, board.Cells);
+                        }
+                    }
+
+                    foreach (Move move in this_piece_moves) {
+                        moves.Add(move);
+                    }
+                }
+            }
+
+            return moves;
+        }
+
         public static List<Move> GenerateMoves(Board board, Piece.PieceColour colour) {
-            moves = GeneratePseudoLegalMoves(board, colour);
+            List<Move> moves = GeneratePseudoLegalMoves(board, colour);
             Piece.PieceColour enemy_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
             Vector2Int my_king_square = default;
@@ -181,9 +185,10 @@ namespace ConsoleChessApp {
             return squares_to_edge[dir_offset_index];
         }
 
-        private static void _GenerateSlidingMoves(Vector2Int start_cell, Piece[,] cells) {
-            Piece piece = cells[start_cell.x, start_cell.y];
+        private static List<Move> _GenerateSlidingMoves(Vector2Int start_cell, Piece[,] cells) {
+            var moves = new List<Move>();
 
+            Piece piece = cells[start_cell.x, start_cell.y];
             var enemy_colour = piece.MyPieceColour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
 
             //n, e, s, w, ne, se, nw, sw
@@ -209,9 +214,13 @@ namespace ConsoleChessApp {
                     }
                 }
             }
+
+            return moves;
         }
 
-        private static void _GeneratePawnMoves(Vector2Int start_cell, Piece[,] cells) {
+        private static List<Move> _GeneratePawnMoves(Vector2Int start_cell, Piece[,] cells) {
+            var moves = new List<Move>();
+
             Piece piece = cells[start_cell.x, start_cell.y];
 
             int forward = piece.MyPieceColour == Piece.PieceColour.White ? -1 : 1;
@@ -246,9 +255,13 @@ namespace ConsoleChessApp {
                     moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward)));
                 }
             }
+
+            return moves;
         }
 
-        private static void _GenerateKnightMoves(Vector2Int start_cell, Piece[,] cells) {
+        private static List<Move> _GenerateKnightMoves(Vector2Int start_cell, Piece[,] cells) {
+            var moves = new List<Move>();
+
             Piece piece = cells[start_cell.x, start_cell.y];
 
             for (int i = 0; i < knight_offsets.GetLength(0); i++) {
@@ -261,9 +274,13 @@ namespace ConsoleChessApp {
                     }
                 }
             }
+
+            return moves;
         }
 
-        private static void _GenerateKingMoves(Vector2Int start_cell, Piece[,] cells) {
+        private static List<Move> _GenerateKingMoves(Vector2Int start_cell, Piece[,] cells) {
+            var moves = new List<Move>();
+
             Piece piece = cells[start_cell.x, start_cell.y];
 
             for (int i = 0; i < sliding_offsets.GetLength(0); i++) {
@@ -277,6 +294,8 @@ namespace ConsoleChessApp {
                     }
                 }
             }
+
+            return moves;
         }
 
         public static bool TryParseMove(out Move move, string notation) {

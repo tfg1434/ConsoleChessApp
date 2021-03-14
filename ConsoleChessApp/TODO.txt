@@ -1,4 +1,1 @@
-﻿Instead of clearing console, move cursor to remove flicker (make a Vector2 to input the move at)
-Emoji chess pieces (Unicode)
-
-
+﻿
