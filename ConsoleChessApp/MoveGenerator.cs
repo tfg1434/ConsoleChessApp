@@ -11,8 +11,8 @@ namespace ConsoleChessApp {
         //north-left, north-right, east-up, east-down, south-right, south-left, west-down, west-up
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
 
-        public static List<CastleMove> GenerateCastleMoves(string notation, Board board) {
-            var moves = new List<CastleMove>();
+        public static List<Move> GenerateCastleMoves(Board board) {
+            var moves = new List<Move>();
 
             //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
             var opponent_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
@@ -28,76 +28,74 @@ namespace ConsoleChessApp {
             }
             Piece king = board.Cells[king_start_square.x, king_start_square.y];
 
-            if (notation == "0-0") {
-                for (int y = 0; y < Board.GridSize; y++) {
-                    for (int x = 0; x < Board.GridSize; x++) {
-                        Piece piece = board.Cells[x, y];
+            #region kingside
+            for (int y = 0; y < Board.GridSize; y++) {
+                for (int x = 0; x < Board.GridSize; x++) {
+                    Piece piece = board.Cells[x, y];
 
-                        //is it the correct rook?
-                        if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                            var rook_start_square = new Vector2Int(x, y);
-                            bool passing_through_check = false;
-                            bool piece_in_way = false;
+                    //is it the correct rook?
+                    if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                        var rook_start_square = new Vector2Int(x, y);
+                        bool passing_through_check = false;
+                        bool piece_in_way = false;
 
-                            //check if KING is passing through check or starting in check
-                            for (var i = 0; i < 3; i++) {
-                                if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
-                                    passing_through_check = true;
-                                }
-                            }
-
-                            //check if there are any pieces in the way
-                            for (var i = 1; i < 3; i++) {
-                                if (board.Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
-                                    piece_in_way = true;
-                                }
-                            }
-
-                            //are we allowed to castle?
-                            if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
-                                !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-
-                                var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
-                                var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
-
-                                moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
+                        //check if KING is passing through check or starting in check
+                        for (var i = 0; i < 3; i++) {
+                            if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
+                                passing_through_check = true;
                             }
                         }
-                    }
-                }
-            } else if (notation == "0-0-0") {
-                for (int y = 0; y < Board.GridSize; y++) {
-                    for (int x = 0; x < Board.GridSize; x++) {
-                        Piece piece = board.Cells[x, y];
-                        
-                        if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                            var rook_start_square = new Vector2Int(x, y);
-                            bool passing_through_check = false;
-                            bool piece_in_way = false;
 
-                            for (var i = 0; i > -3; i--) {
-                                if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
-                                    passing_through_check = true;
-                                }
+                        //check if there are any pieces in the way
+                        for (var i = 1; i < 3; i++) {
+                            if (board.Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
+                                piece_in_way = true;
                             }
+                        }
 
-                            for (var i = 1; i < 4; i++) {
-                                if (board.Cells[rook_start_square.x + i, rook_start_square.y].MyPieceType != Piece.PieceType.None) {
-                                    piece_in_way = true;
-                                }
-                            }
-
-                            if (Math.Abs(rook_start_square.x - king_start_square.x) == 4 && rook_start_square.y == king_start_square.y &&
-                                !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-                                var rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
-                                var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
-
-                                moves.Add(new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square));
-                            }
+                        //are we allowed to castle?
+                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
+                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+                                
+                            var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
+                            moves.Add(new Move(king_start_square, king_target_square, true));
                         }
                     }
                 }
             }
+            #endregion
+            #region queenside
+            for (int y = 0; y < Board.GridSize; y++) {
+                for (int x = 0; x < Board.GridSize; x++) {
+                    Piece piece = board.Cells[x, y];
+                    
+                    if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                        var rook_start_square = new Vector2Int(x, y);
+                        bool passing_through_check = false;
+                        bool piece_in_way = false;
+
+                        for (var i = 0; i > -3; i--) {
+                            if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
+                                passing_through_check = true;
+                            }
+                        }
+
+                        for (var i = 1; i < 4; i++) {
+                            if (board.Cells[rook_start_square.x + i, rook_start_square.y].MyPieceType != Piece.PieceType.None) {
+                                piece_in_way = true;
+                            }
+                        }
+
+                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 4 && rook_start_square.y == king_start_square.y &&
+                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+                            var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
+
+                            moves.Add(new Move(king_start_square, king_target_square, true));
+                        }
+                    }
+                }
+            }
+            #endregion
 
             return moves;
         }
@@ -156,7 +154,7 @@ namespace ConsoleChessApp {
                     pruned_moves.Add(move);
                 }
             }
-
+            
             return pruned_moves;
         }
 
@@ -206,7 +204,7 @@ namespace ConsoleChessApp {
                         break;
                     }
 
-                    moves.Add(new Move(start_cell, target_cell));
+                    moves.Add(new Move(start_cell, target_cell, false));
 
                     //if capturing piece, break to next dir index
                     if (target_piece.MyPieceColour == enemy_colour) {
@@ -228,13 +226,13 @@ namespace ConsoleChessApp {
             //one forward
             var target_cell = new Vector2Int(start_cell.x, start_cell.y + forward);
             if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
-                moves.Add(new Move(start_cell, target_cell));
+                moves.Add(new Move(start_cell, target_cell, false));
             }
             //two forward
             if (piece.CanDoubleMove) {
                 target_cell = new Vector2Int(start_cell.x, start_cell.y + forward * 2);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
-                    moves.Add(new Move(start_cell, target_cell));
+                    moves.Add(new Move(start_cell, target_cell, false));
                 }
             }
 
@@ -245,14 +243,14 @@ namespace ConsoleChessApp {
 
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y + forward);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType != Piece.PieceType.None && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour){
-                    moves.Add(new Move(start_cell, target_cell));
+                    moves.Add(new Move(start_cell, target_cell, false));
                 }
 
                 //en passant capture
                 //.
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].JustDoubleMoved && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour) {
-                    moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward)));
+                    moves.Add(new Move(start_cell, new Vector2Int(target_cell.x, target_cell.y + forward), false));
                 }
             }
 
@@ -270,7 +268,7 @@ namespace ConsoleChessApp {
                     Piece target_piece = cells[target_cell.x, target_cell.y];
 
                     if (target_piece.MyPieceColour != piece.MyPieceColour) {
-                        moves.Add(new Move(start_cell, target_cell));
+                        moves.Add(new Move(start_cell, target_cell, false));
                     }
                 }
             }
@@ -290,7 +288,7 @@ namespace ConsoleChessApp {
                     Piece target_piece = cells[target_cell.x, target_cell.y];
 
                     if (target_piece.MyPieceColour != piece.MyPieceColour) {
-                        moves.Add(new Move(start_cell, target_cell));
+                        moves.Add(new Move(start_cell, target_cell, false));
                     }
                 }
             }
@@ -298,23 +296,22 @@ namespace ConsoleChessApp {
             return moves;
         }
 
-        public static bool TryParseMove(out Move move, string notation) {
+        public static bool TryParseMove(out Move move, string notation, Board board) {
+            #region normal move
             Match match =  Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$", RegexOptions.IgnoreCase);
 
             if (match.Success) {
                 move = new Move(
                     new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[1].Value)), Board.GridSize - int.Parse(match.Groups[2].ToString())),
-                    new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[3].Value)), Board.GridSize - int.Parse(match.Groups[4].ToString()))
+                    new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[3].Value)), Board.GridSize - int.Parse(match.Groups[4].ToString())),
+                    false
                 );
 
                 return true;
             }
+            #endregion
 
-            move = default;
-            return false;
-        }
-
-        public static bool TryParseCastleMove(out CastleMove move, string notation, Board board) {
+            #region castle move
             if (notation == "0-0") {
                 Vector2Int king_start_square = default;
                 for (int y = 0; y < Board.GridSize; y++) {
@@ -337,10 +334,9 @@ namespace ConsoleChessApp {
                     }
                 }
 
-                var rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
                 var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
 
-                move = new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square);
+                move = new Move(king_start_square, king_target_square, true);
                 return true;
 
             } else if (notation == "0-0-0") {
@@ -365,12 +361,12 @@ namespace ConsoleChessApp {
                     }
                 }
 
-                var rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
                 var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
 
-                move = new CastleMove(rook_start_square, rook_target_square, king_start_square, king_target_square);
+                move = new Move(king_start_square, king_target_square, true);
                 return true;
             }
+            #endregion
 
             move = default;
             return false;

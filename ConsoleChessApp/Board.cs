@@ -35,83 +35,103 @@ namespace ConsoleChessApp {
         public static readonly Vector2Int EnterMovePos = new(0, board_size.y + board_buffer.y * 2 + 3);
 
         public void Move(Move move, bool change_colour_to_move=true) {
-            Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
-            Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
+            if (!move.IsCastleMove) {
+                Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
+                Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
 
-            //is this move a double move?
-            if (from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2) {
-                to.JustDoubleMoved = true;
-            }
-
-            //this move is en passant
-            int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
-            var behind_vec = new Vector2Int(move.TargetSquare.x, move.TargetSquare.y + backward);
-
-            //Console.WriteLine($"JustDoubleMoved: {Cells[behind_vec.x, behind_vec.y].JustDoubleMoved}");
-            if (InRange(behind_vec) && Cells[behind_vec.x, behind_vec.y].MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x && Cells[behind_vec.x, behind_vec.y].JustDoubleMoved) {
-                Cells[behind_vec.x, behind_vec.y].MyPieceType = Piece.PieceType.None;
-                Cells[behind_vec.x, behind_vec.y].MyPieceColour = Piece.PieceColour.None;
-
-                Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                        (move.TargetSquare.y + backward) * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                Console.Write(" ");
-            }
-            
-            //if it's not a double move
-            if (!(from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2)) {
-                foreach (Piece piece in Cells) {
-                    piece.JustDoubleMoved = false;
+                //is this move a double move?
+                if (from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2) {
+                    to.JustDoubleMoved = true;
                 }
-            }
 
-            to.MyPieceType = from.MyPieceType;
-            to.MyPieceColour = from.MyPieceColour;
-            to.HasMovedBefore = true;
-            from.MyPieceType = Piece.PieceType.None;
-            from.MyPieceColour = Piece.PieceColour.None;
-            from.HasMovedBefore = false;
+                //this move is en passant
+                int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
+                var behind_vec = new Vector2Int(move.TargetSquare.x, move.TargetSquare.y + backward);
 
-            //it's a fuckin pawn promotion
-            if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn) {
-                Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
-                Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
-                Utils.ClearCurrentConsoleLine();
+                //Console.WriteLine($"JustDoubleMoved: {Cells[behind_vec.x, behind_vec.y].JustDoubleMoved}");
+                if (InRange(behind_vec) && Cells[behind_vec.x, behind_vec.y].MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x && Cells[behind_vec.x, behind_vec.y].JustDoubleMoved) {
+                    Cells[behind_vec.x, behind_vec.y].MyPieceType = Piece.PieceType.None;
+                    Cells[behind_vec.x, behind_vec.y].MyPieceColour = Piece.PieceColour.None;
 
-                Piece.PieceType promote_to;
-                while (true) {
-                    try {
-                        promote_to = char_to_piece_type[char.Parse(Console.ReadLine())];
+                    Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                            (move.TargetSquare.y + backward) * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
+                    Console.Write(" ");
+                }
 
-                        if (promote_to != Piece.PieceType.King && promote_to != Piece.PieceType.Pawn) {
-                            break;
-                        }
-                    } catch {
-                        Utils.ClearCurrentConsoleLine();
-                        continue;
+                //if it's not a double move
+                if (!(from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2)) {
+                    foreach (Piece piece in Cells) {
+                        piece.JustDoubleMoved = false;
                     }
                 }
 
-                to.MyPieceType = promote_to;
-            }
+                to.MyPieceType = from.MyPieceType;
+                to.MyPieceColour = from.MyPieceColour;
+                to.HasMovedBefore = true;
+                from.MyPieceType = Piece.PieceType.None;
+                from.MyPieceColour = Piece.PieceColour.None;
+                from.HasMovedBefore = false;
 
-            if (change_colour_to_move) {
-                ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
-            }
-            to.CanDoubleMove = false;
+                //it's a fuckin pawn promotion
+                if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn) {
+                    Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
+                    Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
+                    Utils.ClearCurrentConsoleLine();
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                        move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-            Console.Write(" ");
-            Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                        move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-            char print = piece_type_to_char[to.MyPieceType];
-            if (to.MyPieceColour == Piece.PieceColour.White) {
-                print = char.ToUpper(print);
-            }
-            Console.Write(print);
+                    Piece.PieceType promote_to;
+                    while (true) {
+                        try {
+                            promote_to = char_to_piece_type[char.Parse(Console.ReadLine())];
 
-            Console.ResetColor();
+                            if (promote_to != Piece.PieceType.King && promote_to != Piece.PieceType.Pawn) {
+                                break;
+                            }
+                        } catch {
+                            Utils.ClearCurrentConsoleLine();
+                            continue;
+                        }
+                    }
+
+                    to.MyPieceType = promote_to;
+                }
+
+                if (change_colour_to_move) {
+                    ColourToMove = ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+                }
+                to.CanDoubleMove = false;
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                            move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
+                Console.Write(" ");
+                Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                            move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
+                char print = piece_type_to_char[to.MyPieceType];
+                if (to.MyPieceColour == Piece.PieceColour.White) {
+                    print = char.ToUpper(print);
+                }
+                Console.Write(print);
+
+                Console.ResetColor();
+
+            } else if (move.IsCastleMove) {
+                if (move.TargetSquare.x > move.StartSquare.x) {
+                    //kingside castle
+                    Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x + 3, move.StartSquare.y);
+                    Vector2Int rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
+
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false);
+                    Move(new Move(rook_start_square, rook_target_square, false), true);
+
+                } else if (move.TargetSquare.x < move.StartSquare.x) {
+                    //queenside castle
+                    Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x - 4, move.StartSquare.y);
+                    Vector2Int rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
+
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false);
+                    Move(new Move(rook_start_square, rook_target_square, false), true);
+                }
+            }
         }
 
         //simulates a move and returns Cells, but does not actually change the board.
@@ -237,15 +257,6 @@ namespace ConsoleChessApp {
                     x++;
                 }
             }
-        }
-
-        public static Move ParseNotation(string notation) {
-            string[] split = notation.Split(" ");
-
-            var from = new Vector2Int(Array.IndexOf(Utils.Alphabet, split[0][0]), GridSize - int.Parse(split[0][1].ToString()));
-            var to = new Vector2Int(Array.IndexOf(Utils.Alphabet, split[1][0]), GridSize - int.Parse(split[1][1].ToString()));
-
-            return new Move(from, to);
         }
 
         public static bool InRange(Vector2Int pos) {

@@ -8,24 +8,13 @@ namespace ConsoleChessApp {
     struct Move {
         public readonly Vector2Int StartSquare;
         public readonly Vector2Int TargetSquare;
+        public readonly bool IsCastleMove;
 
-        public Move(Vector2Int start_square, Vector2Int target_square) {
+        //if it's a castle move then StartSquare and TargetSquare correspond to king's start and end square
+        public Move(Vector2Int start_square, Vector2Int target_square, bool is_castle_move) {
             StartSquare = start_square;
             TargetSquare = target_square;
-        }
-    }
-
-    struct CastleMove {
-        public readonly Vector2Int RookStartSquare;
-        public readonly Vector2Int RookTargetSquare;
-        public readonly Vector2Int KingStartSquare;
-        public readonly Vector2Int KingTargetSquare;
-
-        public CastleMove(Vector2Int rook_start_square, Vector2Int rook_target_square, Vector2Int king_start_square, Vector2Int king_target_square) {
-            RookStartSquare = rook_start_square;
-            RookTargetSquare = rook_target_square;
-            KingStartSquare = king_start_square;
-            KingTargetSquare = king_target_square;
+            IsCastleMove = is_castle_move;
         }
     }
 }

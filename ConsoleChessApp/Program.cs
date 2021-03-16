@@ -17,23 +17,14 @@ namespace ConsoleChessApp {
 
                 string input = Console.ReadLine();
 
-                if (MoveGenerator.TryParseMove(out Move move, input)) {
+                if (MoveGenerator.TryParseMove(out Move move, input, board)) {
                     List<Move> moves = MoveGenerator.GenerateMoves(board);
+                    foreach (Move castle_move in MoveGenerator.GenerateCastleMoves(board)) {
+                        moves.Add(castle_move);
+                    }
 
                     if (moves.Contains(move)) {
                         board.Move(move);
-                    } else {
-                        Console.Write("illegal move!!!!");
-                        Thread.Sleep(500);
-                        Utils.ClearCurrentConsoleLine();
-                        continue;
-                    }
-                } else if (MoveGenerator.TryParseCastleMove(out CastleMove castle_move, input, board)) {
-                    List<CastleMove> castle_moves = MoveGenerator.GenerateCastleMoves(input, board);
-
-                    if (castle_moves.Contains(castle_move)) {
-                        board.Move(new Move(castle_move.RookStartSquare, castle_move.RookTargetSquare), false);
-                        board.Move(new Move(castle_move.KingStartSquare, castle_move.KingTargetSquare), true);
                     } else {
                         Console.Write("illegal move!!!!");
                         Thread.Sleep(500);
