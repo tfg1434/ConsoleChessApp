@@ -156,16 +156,6 @@ namespace ConsoleChessApp {
             return new_board;
         }
 
-        public bool IsSquareAttacked(Vector2Int square, Board board, Piece.PieceColour attacking_colour) {
-            List<Move> moves = MoveGenerator.GenerateMoves(board, attacking_colour);
-
-            if (moves.Any(move => move.TargetSquare == square)) {
-                return true;
-            }
-
-            return false;
-        }
-
         public void Draw() {
             #region Pieces
             Console.ForegroundColor = ConsoleColor.Green;

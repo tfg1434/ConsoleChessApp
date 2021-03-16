@@ -15,87 +15,7 @@ namespace ConsoleChessApp {
             var moves = new List<Move>();
 
             //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
-            var opponent_colour = board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
-
-            Vector2Int king_start_square = default;
-            for (int y = 0; y < Board.GridSize; y++) {
-                for (int x = 0; x < Board.GridSize; x++) {
-                    Piece piece = board.Cells[x, y];
-                    if (piece.MyPieceType == Piece.PieceType.King) {
-                        king_start_square = new Vector2Int(x, y);
-                    }
-                }
-            }
-            Piece king = board.Cells[king_start_square.x, king_start_square.y];
-
-            #region kingside
-            for (int y = 0; y < Board.GridSize; y++) {
-                for (int x = 0; x < Board.GridSize; x++) {
-                    Piece piece = board.Cells[x, y];
-
-                    //is it the correct rook?
-                    if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                        var rook_start_square = new Vector2Int(x, y);
-                        bool passing_through_check = false;
-                        bool piece_in_way = false;
-
-                        //check if KING is passing through check or starting in check
-                        for (var i = 0; i < 3; i++) {
-                            if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
-                                passing_through_check = true;
-                            }
-                        }
-
-                        //check if there are any pieces in the way
-                        for (var i = 1; i < 3; i++) {
-                            if (board.Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
-                                piece_in_way = true;
-                            }
-                        }
-
-                        //are we allowed to castle?
-                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
-                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-                                
-                            var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
-                            moves.Add(new Move(king_start_square, king_target_square, true));
-                        }
-                    }
-                }
-            }
-            #endregion
-            #region queenside
-            for (int y = 0; y < Board.GridSize; y++) {
-                for (int x = 0; x < Board.GridSize; x++) {
-                    Piece piece = board.Cells[x, y];
-                    
-                    if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                        var rook_start_square = new Vector2Int(x, y);
-                        bool passing_through_check = false;
-                        bool piece_in_way = false;
-
-                        for (var i = 0; i > -3; i--) {
-                            if (board.IsSquareAttacked(new Vector2Int(king_start_square.x + i, king_start_square.y), board, opponent_colour)) {
-                                passing_through_check = true;
-                            }
-                        }
-
-                        for (var i = 1; i < 4; i++) {
-                            if (board.Cells[rook_start_square.x + i, rook_start_square.y].MyPieceType != Piece.PieceType.None) {
-                                piece_in_way = true;
-                            }
-                        }
-
-                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 4 && rook_start_square.y == king_start_square.y &&
-                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-                            var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
-
-                            moves.Add(new Move(king_start_square, king_target_square, true));
-                        }
-                    }
-                }
-            }
-            #endregion
+            
 
             return moves;
         }
@@ -132,29 +52,98 @@ namespace ConsoleChessApp {
 
         public static List<Move> GenerateMoves(Board board, Piece.PieceColour colour) {
             List<Move> moves = GeneratePseudoLegalMoves(board, colour);
-            Piece.PieceColour enemy_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+            Piece.PieceColour opponent_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
-            Vector2Int my_king_square = default;
+            Vector2Int king_start_square = default;
+            List<Move> opponent_responses = GeneratePseudoLegalMoves(board, opponent_colour);
 
+            #region normal moves
             foreach (Move move in moves) {
                 Board test_board = Board.SimulateMove(move, board);
-                List<Move> opponent_responses = GeneratePseudoLegalMoves(board, enemy_colour);
+                //we can use pseudolegal moves because even if the piece is pinned, it still counts as being able to capture the king
+                
 
                 for (var y = 0; y < Board.GridSize; y++) {
                     for (var x = 0; x < Board.GridSize; x++) {
                         if (test_board.Cells[x, y].MyPieceType == Piece.PieceType.King && test_board.Cells[x, y].MyPieceColour == board.ColourToMove) {
-                            my_king_square = new Vector2Int(x, y);
+                            king_start_square = new Vector2Int(x, y);
                         }
                     }
                 }
 
-                if (opponent_responses.Any(response => response.TargetSquare == my_king_square)) {
+                if (opponent_responses.Any(response => response.TargetSquare == king_start_square)) {
                     //opponent can capture king - so last move was illegal
                 } else {
                     pruned_moves.Add(move);
                 }
             }
-            
+            #endregion
+
+            #region castling
+            for (int y = 0; y < Board.GridSize; y++) {
+                for (int x = 0; x < Board.GridSize; x++) {
+                    Piece piece = board.Cells[x, y];
+                    Piece king = board.Cells[king_start_square.x, king_start_square.y];
+
+                    #region kingside
+                    if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                        var rook_start_square = new Vector2Int(x, y);
+                        bool passing_through_check = false;
+                        bool piece_in_way = false;
+
+                        //check if KING is passing through check or starting in check
+                        for (var i = 0; i < 3; i++) {
+                            if (opponent_responses.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
+                                passing_through_check = true;
+                            }
+                        }
+
+                        //check if there are any pieces in the way
+                        for (var i = 1; i < 3; i++) {
+                            if (board.Cells[king_start_square.x + i, king_start_square.y].MyPieceType != Piece.PieceType.None) {
+                                piece_in_way = true;
+                            }
+                        }
+
+                        //are we allowed to castle?
+                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
+                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+
+                            var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
+                            pruned_moves.Add(new Move(king_start_square, king_target_square, true));
+                        }
+                    }
+                    #endregion
+                    #region queenside
+                    else if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                        var rook_start_square = new Vector2Int(x, y);
+                        bool passing_through_check = false;
+                        bool piece_in_way = false;
+
+                        for (var i = 0; i > -3; i--) {
+                            if (opponent_responses.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
+                                passing_through_check = true;
+                            }
+                        }
+
+                        for (var i = 1; i < 4; i++) {
+                            if (board.Cells[rook_start_square.x + i, rook_start_square.y].MyPieceType != Piece.PieceType.None) {
+                                piece_in_way = true;
+                            }
+                        }
+
+                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 4 && rook_start_square.y == king_start_square.y &&
+                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+                            var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
+
+                            pruned_moves.Add(new Move(king_start_square, king_target_square, true));
+                        }
+                    }
+                    #endregion
+                }
+            }
+            #endregion
+
             return pruned_moves;
         }
 

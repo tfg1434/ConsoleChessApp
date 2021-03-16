@@ -19,9 +19,6 @@ namespace ConsoleChessApp {
 
                 if (MoveGenerator.TryParseMove(out Move move, input, board)) {
                     List<Move> moves = MoveGenerator.GenerateMoves(board);
-                    foreach (Move castle_move in MoveGenerator.GenerateCastleMoves(board)) {
-                        moves.Add(castle_move);
-                    }
 
                     if (moves.Contains(move)) {
                         board.Move(move);
