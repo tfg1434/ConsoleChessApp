@@ -33,6 +33,8 @@ namespace ConsoleChessApp {
         public Piece[,] Cells = new Piece[GridSize, GridSize];
         public Piece.PieceColour ColourToMove;
         public static readonly Vector2Int EnterMovePos = new(0, board_size.y + board_buffer.y * 2 + 3);
+        public const Piece.PieceColour PlayerColour = Piece.PieceColour.White;
+        public const Piece.PieceColour AIPlayerColour = Piece.PieceColour.Black;
 
         public void Move(Move move, bool change_colour_to_move=true) {
             if (!move.IsCastleMove) {
@@ -134,7 +136,7 @@ namespace ConsoleChessApp {
             }
         }
 
-        //simulates a move and returns Cells, but does not actually change the board.
+        //simulates a move and returns Board, but does not actually change the board.
         public static Board SimulateMove(Move move, Board board) {
             var new_board = new Board(board.ColourToMove);
             for (int y = 0; y < GridSize; y++) {
