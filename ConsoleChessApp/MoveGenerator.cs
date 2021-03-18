@@ -11,15 +11,6 @@ namespace ConsoleChessApp {
         //north-left, north-right, east-up, east-down, south-right, south-left, west-down, west-up
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
 
-        public static List<Move> GenerateCastleMoves(Board board) {
-            var moves = new List<Move>();
-
-            //0-0 = Kingside Castle, 0-0-0 = Queenside Castle
-            
-
-            return moves;
-        }
-
         public static List<Move> GeneratePseudoLegalMoves(Board board, Piece.PieceColour colour_to_move) {
             var moves = new List<Move>();
 
@@ -54,24 +45,24 @@ namespace ConsoleChessApp {
             List<Move> moves = GeneratePseudoLegalMoves(board, colour);
             Piece.PieceColour opponent_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
-            Vector2Int king_start_square = default;
-            List<Move> opponent_responses = GeneratePseudoLegalMoves(board, opponent_colour);
 
             #region normal moves
             foreach (Move move in moves) {
                 Board test_board = Board.SimulateMove(move, board);
-                //we can use pseudolegal moves because even if the piece is pinned, it still counts as being able to capture the king
-                
-
+                Vector2Int king_square = default;
                 for (var y = 0; y < Board.GridSize; y++) {
                     for (var x = 0; x < Board.GridSize; x++) {
                         if (test_board.Cells[x, y].MyPieceType == Piece.PieceType.King && test_board.Cells[x, y].MyPieceColour == board.ColourToMove) {
-                            king_start_square = new Vector2Int(x, y);
+                            king_square = new Vector2Int(x, y);
                         }
                     }
                 }
 
-                if (opponent_responses.Any(response => response.TargetSquare == king_start_square)) {
+                //order is important - make move, simulate based on board after that move so pins work
+                //we can use pseudolegal moves because even if the piece is pinned, it still counts as being able to capture the king
+                List<Move> opponent_responses = GeneratePseudoLegalMoves(test_board, opponent_colour);
+
+                if (opponent_responses.Any(response => response.TargetSquare == king_square)) {
                     //opponent can capture king - so last move was illegal
                 } else {
                     pruned_moves.Add(move);
@@ -80,10 +71,21 @@ namespace ConsoleChessApp {
             #endregion
 
             #region castling
+            Vector2Int king_start_square = default;
+            for (var y = 0; y < Board.GridSize; y++) {
+                for (var x = 0; x < Board.GridSize; x++) {
+                    if (board.Cells[x, y].MyPieceType == Piece.PieceType.King && board.Cells[x, y].MyPieceColour == board.ColourToMove) {
+                        king_start_square = new Vector2Int(x, y);
+                    }
+                }
+            }
+
             for (int y = 0; y < Board.GridSize; y++) {
                 for (int x = 0; x < Board.GridSize; x++) {
                     Piece piece = board.Cells[x, y];
                     Piece king = board.Cells[king_start_square.x, king_start_square.y];
+
+                    List<Move> opponent_moves = GeneratePseudoLegalMoves(board, opponent_colour);
 
                     #region kingside
                     if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
@@ -93,7 +95,7 @@ namespace ConsoleChessApp {
 
                         //check if KING is passing through check or starting in check
                         for (var i = 0; i < 3; i++) {
-                            if (opponent_responses.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
+                            if (opponent_moves.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
                                 passing_through_check = true;
                             }
                         }
@@ -121,7 +123,7 @@ namespace ConsoleChessApp {
                         bool piece_in_way = false;
 
                         for (var i = 0; i > -3; i--) {
-                            if (opponent_responses.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
+                            if (opponent_moves.Any(response => response.TargetSquare == new Vector2Int(king_start_square.x + i, king_start_square.y))) {
                                 passing_through_check = true;
                             }
                         }

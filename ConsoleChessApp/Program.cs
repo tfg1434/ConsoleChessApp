@@ -5,41 +5,62 @@ using System.Linq;
 
 namespace ConsoleChessApp {
     class Program {
+        static int Test(int depth, Board board) {
+            if (depth == 0) {
+                return 1;
+            }
+
+            List<Move> moves = MoveGenerator.GenerateMoves(board);
+            int n = 0;
+
+            foreach (Move move in moves) {
+                Board test_board = Board.SimulateMove(move, board);
+                n += Test(depth - 1, test_board);
+                test_board = board;
+            }
+
+            return n;
+        }
+
         static void Main(string[] args) {
             var board = new Board();
-            board.Draw();
+            Console.WriteLine(Test(2, board));
 
-            while (true) {
-                if (board.ColourToMove == Board.PlayerColour) {
-                    Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
-                    Utils.ClearCurrentConsoleLine();
-                    Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
-                    Utils.ClearCurrentConsoleLine();
+            //var board = new Board();
+            //board.Draw();
+            ////new Exception("pins dont work");
 
-                    string input = Console.ReadLine();
+            //while (true) {
+            //    //if (board.ColourToMove == Board.PlayerColour) {
+            //    Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
+            //    Utils.ClearCurrentConsoleLine();
+            //    Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
+            //    Utils.ClearCurrentConsoleLine();
 
-                    if (MoveGenerator.TryParseMove(out Move move, input, board)) {
-                        List<Move> moves = MoveGenerator.GenerateMoves(board);
+            //    string input = Console.ReadLine();
 
-                        if (moves.Contains(move)) {
-                            board.Move(move);
-                        } else {
-                            Console.Write("illegal move!!!!");
-                            Thread.Sleep(500);
-                            Utils.ClearCurrentConsoleLine();
-                            continue;
-                        }
+            //    if (MoveGenerator.TryParseMove(out Move move, input, board)) {
+            //        List<Move> moves = MoveGenerator.GenerateMoves(board);
 
-                    } else {
-                        Console.Write("this is not a real move!!!");
-                        Thread.Sleep(500);
-                        Utils.ClearCurrentConsoleLine();
-                        continue;
-                    }
-                } else if (board.ColourToMove == Board.AIPlayerColour) {
-                    board.Move(AIPlayer.ChooseMove(board));
-                }
-            }
+            //        if (moves.Contains(move)) {
+            //            board.Move(move);
+            //        } else {
+            //            Console.Write("illegal move!!!!");
+            //            Thread.Sleep(500);
+            //            Utils.ClearCurrentConsoleLine();
+            //            continue;
+            //        }
+
+            //    } else {
+            //        Console.Write("this is not a real move!!!");
+            //        Thread.Sleep(500);
+            //        Utils.ClearCurrentConsoleLine();
+            //        continue;
+            //    }
+            //    //} else if (board.ColourToMove == Board.AIPlayerColour) {
+            //    //    board.Move(AIPlayer.ChooseMove(board));
+            //    //}
+            //}
         }
     }
 }

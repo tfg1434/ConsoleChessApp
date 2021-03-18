@@ -4,10 +4,10 @@ using System.Text;
 
 namespace ConsoleChessApp {
     class Piece {
-        public PieceType MyPieceType { get; set; } = PieceType.None;
-        public PieceColour MyPieceColour { get; set; } = PieceColour.None;
-        public bool HasMovedBefore { get; set; } = false;
-        public bool CanDoubleMove { get; set; } = true;
+        public PieceType MyPieceType { get; set; }
+        public PieceColour MyPieceColour { get; set; }
+        public bool HasMovedBefore { get; set; }
+        public bool CanDoubleMove { get; set; }
         public bool JustDoubleMoved { get; set; }
 
         public bool IsSlidingPiece => MyPieceType == PieceType.Bishop || MyPieceType == PieceType.Rook || MyPieceType == PieceType.Queen;
@@ -28,10 +28,12 @@ namespace ConsoleChessApp {
             Black = 2,
         }
 
-        public Piece(PieceType type, PieceColour colour, bool can_double_move = true) {
+        public Piece(PieceType type, PieceColour colour, bool can_double_move=true, bool has_moved_before=false, bool just_double_moved=false) {
             MyPieceType = type;
             MyPieceColour = colour;
             CanDoubleMove = can_double_move;
+            HasMovedBefore = has_moved_before;
+            JustDoubleMoved = just_double_moved;
         }
     }
 }
