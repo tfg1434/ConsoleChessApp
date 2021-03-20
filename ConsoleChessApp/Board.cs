@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KBkq - 0 1";
+        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
             [Piece.PieceType.None] = ' ',
@@ -36,7 +36,9 @@ namespace ConsoleChessApp {
         public const Piece.PieceColour PlayerColour = Piece.PieceColour.White;
         public const Piece.PieceColour AIPlayerColour = Piece.PieceColour.Black;
 
-        public void Move(Move move, bool change_colour=true) {
+        public void Move(Move move, bool change_colour=true, bool draw=true, bool promote=true) {
+            //is_real_move determines whether to ask about pawn promotion and draw board
+
             if (!move.IsCastleMove) {
                 Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
                 Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
@@ -51,7 +53,7 @@ namespace ConsoleChessApp {
                 var behind_vec = new Vector2Int(move.TargetSquare.x, move.TargetSquare.y + backward);
 
                 //Console.WriteLine($"JustDoubleMoved: {Cells[behind_vec.x, behind_vec.y].JustDoubleMoved}");
-                if (InRange(behind_vec) && Cells[behind_vec.x, behind_vec.y].MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x && Cells[behind_vec.x, behind_vec.y].JustDoubleMoved) {
+                if (from.MyPieceType == Piece.PieceType.Pawn && InRange(behind_vec) && Cells[behind_vec.x, behind_vec.y].MyPieceType == Piece.PieceType.Pawn && move.StartSquare.x != move.TargetSquare.x && Cells[behind_vec.x, behind_vec.y].JustDoubleMoved && draw) {
                     Cells[behind_vec.x, behind_vec.y].MyPieceType = Piece.PieceType.None;
                     Cells[behind_vec.x, behind_vec.y].MyPieceColour = Piece.PieceColour.None;
 
@@ -75,7 +77,7 @@ namespace ConsoleChessApp {
                 from.HasMovedBefore = false;
 
                 //it's a fuckin pawn promotion
-                if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn) {
+                if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn && promote) {
                     Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
                     Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
                     Utils.ClearCurrentConsoleLine();
@@ -99,19 +101,21 @@ namespace ConsoleChessApp {
 
                 to.CanDoubleMove = false;
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                            move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                Console.Write(" ");
-                Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                            move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                char print = piece_type_to_char[to.MyPieceType];
-                if (to.MyPieceColour == Piece.PieceColour.White) {
-                    print = char.ToUpper(print);
-                }
-                Console.Write(print);
+                if (draw) {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                                move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
+                    Console.Write(" ");
+                    Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
+                                move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
+                    char print = piece_type_to_char[to.MyPieceType];
+                    if (to.MyPieceColour == Piece.PieceColour.White) {
+                        print = char.ToUpper(print);
+                    }
+                    Console.Write(print);
 
-                Console.ResetColor();
+                    Console.ResetColor();
+                }
 
             } else if (move.IsCastleMove) {
                 if (move.TargetSquare.x > move.StartSquare.x) {
@@ -119,8 +123,8 @@ namespace ConsoleChessApp {
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x + 3, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), true);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), true, true, false);
 
                     //Piece rook_to = Cells[rook_target_square.x, rook_target_square.y];
                     //Piece rook_from = Cells[rook_start_square.x, rook_start_square.y];
@@ -172,8 +176,8 @@ namespace ConsoleChessApp {
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x - 4, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), true);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), true, true, false);
 
                     //Piece rook_to = Cells[rook_target_square.x, rook_target_square.y];
                     //Piece rook_from = Cells[rook_start_square.x, rook_start_square.y];
@@ -237,17 +241,7 @@ namespace ConsoleChessApp {
                 }
             }
 
-            Piece to = new_board.Cells[move.TargetSquare.x, move.TargetSquare.y];
-            Piece from = new_board.Cells[move.StartSquare.x, move.StartSquare.y];
-
-            to.MyPieceType = from.MyPieceType;
-            to.MyPieceColour = from.MyPieceColour;
-
-            from.MyPieceType = Piece.PieceType.None;
-            from.MyPieceColour = Piece.PieceColour.None;
-            to.CanDoubleMove = false;
-
-            new_board.ColourToMove = new_board.ColourToMove == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
+            new_board.Move(move, true, false, false);
 
             return new_board;
         }

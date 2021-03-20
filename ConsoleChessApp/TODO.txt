@@ -1,1 +1,5 @@
-﻿
+﻿fix reading from outside the array when generating castle moves
+- reading outside when checking king
+- reading outside when checking rook
+
+when you load a position in, the can castle is busted.
