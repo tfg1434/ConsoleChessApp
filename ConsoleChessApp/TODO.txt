@@ -1,4 +1,8 @@
-﻿fix reading from outside the array when generating castle moves
+﻿YOU CAN EN PASSANT OVER PIECES AAAaaaAAA
+
+
+
+fix reading from outside the array when generating castle moves
 - reading outside when checking king
 - reading outside when checking rook
 

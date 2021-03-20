@@ -222,7 +222,7 @@ namespace ConsoleChessApp {
             //two forward
             if (piece.CanDoubleMove) {
                 target_cell = new Vector2Int(start_cell.x, start_cell.y + forward * 2);
-                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
+                if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None && cells[target_cell.x, target_cell.y - forward].MyPieceType == Piece.PieceType.None) {
                     moves.Add(new Move(start_cell, target_cell, false));
                 }
             }
