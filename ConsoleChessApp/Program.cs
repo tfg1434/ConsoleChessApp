@@ -23,43 +23,43 @@ namespace ConsoleChessApp {
         }
 
         static void Main(string[] args) {
-            var board = new Board();
-            Console.WriteLine(Test(3, board));
-
             //var board = new Board();
-            //board.Draw();
+            //Console.WriteLine(Test(2, board));
 
-            //while (true) {
-            //    if (board.ColourToMove == Board.PlayerColour) {
-            //        Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
-            //        Utils.ClearCurrentConsoleLine();
-            //        Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
-            //        Utils.ClearCurrentConsoleLine();
+            var board = new Board();
+            board.Draw();
 
-            //        string input = Console.ReadLine();
+            while (true) {
+                if (board.ColourToMove == Board.PlayerColour) {
+                    Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
+                    Utils.ClearCurrentConsoleLine();
+                    Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
+                    Utils.ClearCurrentConsoleLine();
 
-            //        if (MoveGenerator.TryParseMove(out Move move, input, board)) {
-            //            List<Move> moves = MoveGenerator.GenerateMoves(board);
+                    string input = Console.ReadLine();
 
-            //            if (moves.Contains(move)) {
-            //                board.Move(move);
-            //            } else {
-            //                Console.Write("illegal move!!!!");
-            //                Thread.Sleep(500);
-            //                Utils.ClearCurrentConsoleLine();
-            //                continue;
-            //            }
+                    if (MoveGenerator.TryParseMove(out Move move, input, board)) {
+                        List<Move> moves = MoveGenerator.GenerateMoves(board);
 
-            //        } else {
-            //            Console.Write("this is not a real move!!!");
-            //            Thread.Sleep(500);
-            //            Utils.ClearCurrentConsoleLine();
-            //            continue;
-            //        }
-            //    } else if (board.ColourToMove == Board.AIPlayerColour) {
-            //        board.Move(AIPlayer.ChooseMove(board));
-            //    }
-            //}
+                        if (moves.Contains(move)) {
+                            board.Move(move);
+                        } else {
+                            Console.Write("illegal move!!!!");
+                            Thread.Sleep(500);
+                            Utils.ClearCurrentConsoleLine();
+                            continue;
+                        }
+
+                    } else {
+                        Console.Write("this is not a real move!!!");
+                        Thread.Sleep(500);
+                        Utils.ClearCurrentConsoleLine();
+                        continue;
+                    }
+                } else if (board.ColourToMove == Board.AIPlayerColour) {
+                    board.Move(AIPlayer.ChooseMove(board));
+                }
+            }
         }
     }
 }

@@ -87,7 +87,7 @@ namespace ConsoleChessApp {
                         try {
                             promote_to = char_to_piece_type[char.Parse(Console.ReadLine())];
 
-                            if (promote_to != Piece.PieceType.King && promote_to != Piece.PieceType.Pawn) {
+                            if (MoveGenerator.CanPromoteTo.Contains(promote_to)) {
                                 break;
                             }
                         } catch {
@@ -124,52 +124,7 @@ namespace ConsoleChessApp {
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
 
                     Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), true, true, false);
-
-                    //Piece rook_to = Cells[rook_target_square.x, rook_target_square.y];
-                    //Piece rook_from = Cells[rook_start_square.x, rook_start_square.y];
-                    //rook_to.MyPieceType = rook_from.MyPieceType;
-                    //rook_to.MyPieceColour = rook_from.MyPieceColour;
-                    //rook_to.HasMovedBefore = true;
-                    //rook_from.MyPieceType = Piece.PieceType.None;
-                    //rook_from.MyPieceColour = Piece.PieceColour.None;
-                    //rook_from.HasMovedBefore = false;
-
-                    //Piece king_to = Cells[move.TargetSquare.x, move.TargetSquare.y];
-                    //Piece king_from = Cells[move.StartSquare.x, move.StartSquare.y];
-                    //king_to.MyPieceType = king_from.MyPieceType;
-                    //king_to.MyPieceColour = king_from.MyPieceColour;
-                    //king_to.HasMovedBefore = true;
-                    //king_from.MyPieceType = Piece.PieceType.None;
-                    //king_from.MyPieceColour = Piece.PieceColour.None;
-                    //king_from.HasMovedBefore = false;
-
-                    //Console.ForegroundColor = ConsoleColor.Green;
-                    ////clear the king start square
-                    //Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //Console.Write(" ");
-                    ////write the king target square
-                    //Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //char print = piece_type_to_char[king_to.MyPieceType];
-                    //if (king_to.MyPieceColour == Piece.PieceColour.White) {
-                    //    print = char.ToUpper(print);
-                    //}
-                    //Console.Write(print);
-                    ////clear the rook start square
-                    //Console.SetCursorPosition(rook_start_square.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            rook_start_square.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //Console.Write(" ");
-                    ////write the rook target square
-                    //Console.SetCursorPosition(rook_target_square.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            rook_target_square.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //print = piece_type_to_char[rook_to.MyPieceType];
-                    //if (rook_to.MyPieceColour == Piece.PieceColour.White) {
-                    //    print = char.ToUpper(print);
-                    //}
-                    //Console.Write(print);
-                    //Console.ResetColor();
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true, false);
 
                 } else if (move.TargetSquare.x < move.StartSquare.x) {
                     //queenside castle
@@ -177,52 +132,7 @@ namespace ConsoleChessApp {
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
 
                     Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), true, true, false);
-
-                    //Piece rook_to = Cells[rook_target_square.x, rook_target_square.y];
-                    //Piece rook_from = Cells[rook_start_square.x, rook_start_square.y];
-                    //rook_to.MyPieceType = rook_from.MyPieceType;
-                    //rook_to.MyPieceColour = rook_from.MyPieceColour;
-                    //rook_to.HasMovedBefore = true;
-                    //rook_from.MyPieceType = Piece.PieceType.None;
-                    //rook_from.MyPieceColour = Piece.PieceColour.None;
-                    //rook_from.HasMovedBefore = false;
-
-                    //Piece king_to = Cells[move.TargetSquare.x, move.TargetSquare.y];
-                    //Piece king_from = Cells[move.StartSquare.x, move.StartSquare.y];
-                    //king_to.MyPieceType = king_from.MyPieceType;
-                    //king_to.MyPieceColour = king_from.MyPieceColour;
-                    //king_to.HasMovedBefore = true;
-                    //king_from.MyPieceType = Piece.PieceType.None;
-                    //king_from.MyPieceColour = Piece.PieceColour.None;
-                    //king_from.HasMovedBefore = false;
-
-                    //Console.ForegroundColor = ConsoleColor.Green;
-                    ////clear the king start square
-                    //Console.SetCursorPosition(move.StartSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            move.StartSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //Console.Write(" ");
-                    ////write the king target square
-                    //Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //char print = piece_type_to_char[king_to.MyPieceType];
-                    //if (king_to.MyPieceColour == Piece.PieceColour.White) {
-                    //    print = char.ToUpper(print);
-                    //}
-                    //Console.Write(print);
-                    ////clear the rook start square
-                    //Console.SetCursorPosition(rook_start_square.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            rook_start_square.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //Console.Write(" ");
-                    ////write the rook target square
-                    //Console.SetCursorPosition(rook_target_square.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
-                    //            rook_target_square.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    //print = piece_type_to_char[rook_to.MyPieceType];
-                    //if (rook_to.MyPieceColour == Piece.PieceColour.White) {
-                    //    print = char.ToUpper(print);
-                    //}
-                    //Console.Write(print);
-                    //Console.ResetColor();
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true, false);
                 }
             }
 

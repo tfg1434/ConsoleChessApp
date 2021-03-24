@@ -11,6 +11,8 @@ namespace ConsoleChessApp {
         //north-left, north-right, east-up, east-down, south-right, south-left, west-down, west-up
         private static readonly int[,] knight_offsets = { { -1, -2 }, { 1, -2 }, { 2, -1 }, { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 } };
 
+        public static Piece.PieceType[] CanPromoteTo { get; } = { Piece.PieceType.Bishop, Piece.PieceType.Knight, Piece.PieceType.Rook, Piece.PieceType.Queen };
+
         public static List<Move> GeneratePseudoLegalMoves(Board board, Piece.PieceColour colour_to_move) {
             var moves = new List<Move>();
 
@@ -88,7 +90,9 @@ namespace ConsoleChessApp {
                     List<Move> opponent_moves = GeneratePseudoLegalMoves(board, opponent_colour);
 
                     #region kingside
-                    if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                    if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove && 
+                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 3 && !piece.HasMovedBefore && !king.HasMovedBefore) {
+
                         var rook_start_square = new Vector2Int(x, y);
                         bool passing_through_check = false;
                         bool piece_in_way = false;
@@ -108,16 +112,16 @@ namespace ConsoleChessApp {
                         }
 
                         //are we allowed to castle?
-                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 3 && rook_start_square.y == king_start_square.y &&
-                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
-
+                        if (!passing_through_check && !piece_in_way) {
                             var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
                             pruned_moves.Add(new Move(king_start_square, king_target_square, true));
                         }
                     }
                     #endregion
                     #region queenside
-                    else if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
+                    else if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove && 
+                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 4 && !piece.HasMovedBefore && !king.HasMovedBefore) {
+
                         var rook_start_square = new Vector2Int(x, y);
                         bool passing_through_check = false;
                         bool piece_in_way = false;
@@ -134,8 +138,7 @@ namespace ConsoleChessApp {
                             }
                         }
 
-                        if (Math.Abs(rook_start_square.x - king_start_square.x) == 4 && rook_start_square.y == king_start_square.y &&
-                            !piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
+                        if (!piece.HasMovedBefore && !king.HasMovedBefore && !passing_through_check && !piece_in_way) {
                             var king_target_square = new Vector2Int(king_start_square.x - 2, king_start_square.y);
 
                             pruned_moves.Add(new Move(king_start_square, king_target_square, true));
@@ -314,17 +317,6 @@ namespace ConsoleChessApp {
                     }
                 }
 
-                Vector2Int rook_start_square = default;
-                for (int y = 0; y < Board.GridSize; y++) {
-                    for (int x = 0; x < Board.GridSize; x++) {
-                        Piece piece = board.Cells[x, y];
-
-                        if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                            rook_start_square = new Vector2Int(x, y);
-                        }
-                    }
-                }
-
                 var king_target_square = new Vector2Int(king_start_square.x + 2, king_start_square.y);
 
                 move = new Move(king_start_square, king_target_square, true);
@@ -337,17 +329,6 @@ namespace ConsoleChessApp {
                         Piece piece = board.Cells[x, y];
                         if (piece.MyPieceType == Piece.PieceType.King && piece.MyPieceColour == board.ColourToMove) {
                             king_start_square = new Vector2Int(x, y);
-                        }
-                    }
-                }
-
-                Vector2Int rook_start_square = default;
-                for (int y = 0; y < Board.GridSize; y++) {
-                    for (int x = 0; x < Board.GridSize; x++) {
-                        Piece piece = board.Cells[x, y];
-
-                        if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove) {
-                            rook_start_square = new Vector2Int(x, y);
                         }
                     }
                 }
