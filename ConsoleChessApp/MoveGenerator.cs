@@ -48,7 +48,7 @@ namespace ConsoleChessApp {
             Piece.PieceColour opponent_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
             List<Move> pruned_moves = new();
 
-            #region normal moves
+            #region verify normal moves
             foreach (Move move in moves) {
                 Board test_board = Board.SimulateMove(move, board);
                 Vector2Int king_square = default;
@@ -88,10 +88,12 @@ namespace ConsoleChessApp {
                     Piece king = board.Cells[king_start_square.x, king_start_square.y];
 
                     List<Move> opponent_moves = GeneratePseudoLegalMoves(board, opponent_colour);
+                    bool fen_castle_kingside = board.ColourToMove == Piece.PieceColour.White ? board.fen_white_kingside_castle : board.fen_black_kingside_castle;
+                    bool fen_castle_queenside = board.ColourToMove == Piece.PieceColour.White ? board.fen_white_queenside_castle : board.fen_black_queenside_castle;
 
                     #region kingside
                     if (piece.MyPieceType == Piece.PieceType.Rook && x > king_start_square.x && piece.MyPieceColour == board.ColourToMove && 
-                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 3 && !piece.HasMovedBefore && !king.HasMovedBefore) {
+                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 3 && !piece.HasMovedBefore && !king.HasMovedBefore && fen_castle_kingside) {
 
                         var rook_start_square = new Vector2Int(x, y);
                         bool passing_through_check = false;
@@ -120,7 +122,7 @@ namespace ConsoleChessApp {
                     #endregion
                     #region queenside
                     else if (piece.MyPieceType == Piece.PieceType.Rook && x < king_start_square.x && piece.MyPieceColour == board.ColourToMove && 
-                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 4 && !piece.HasMovedBefore && !king.HasMovedBefore) {
+                        king_start_square.y == y && Math.Abs(king_start_square.x - x) == 4 && !piece.HasMovedBefore && !king.HasMovedBefore && fen_castle_queenside) {
 
                         var rook_start_square = new Vector2Int(x, y);
                         bool passing_through_check = false;

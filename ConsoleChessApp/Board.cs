@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Q - 0 1";
 
         private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
             [Piece.PieceType.None] = ' ',
@@ -35,6 +35,12 @@ namespace ConsoleChessApp {
         public static readonly Vector2Int EnterMovePos = new(0, board_size.y + board_buffer.y * 2 + 3);
         public const Piece.PieceColour PlayerColour = Piece.PieceColour.White;
         public const Piece.PieceColour AIPlayerColour = Piece.PieceColour.Black;
+
+        //fen shit
+        public bool fen_white_kingside_castle { get; private set; } = false;
+        public bool fen_white_queenside_castle { get; private set; } = false;
+        public bool fen_black_kingside_castle { get; private set; } = false;
+        public bool fen_black_queenside_castle { get; private set; } = false;
 
         public void Move(Move move, bool change_colour=true, bool draw=true, bool promote=true) {
             //is_real_move determines whether to ask about pawn promotion and draw board
@@ -225,6 +231,7 @@ namespace ConsoleChessApp {
         }
 
         public void LoadFromFen(string fen) {
+            #region piece placement
             string fen_board = fen.Split(' ')[0]; //skip the can castle part and shit
             int x = 0;
             int y = 0;
@@ -247,6 +254,26 @@ namespace ConsoleChessApp {
                     x++;
                 }
             }
+            #endregion
+            #region active colour
+            char fen_colour = char.Parse(fen.Split(' ')[1]);
+            ColourToMove = fen_colour == 'w' ? Piece.PieceColour.White : Piece.PieceColour.Black;
+            #endregion
+            #region castling availability
+            //- for nothing, KQkq for each castle option otherwise
+            string fen_castle_availability = fen.Split(' ')[2];
+            if (fen_castle_availability != "-") {
+                fen_white_kingside_castle = fen_castle_availability.Contains('K');
+                fen_white_queenside_castle = fen_castle_availability.Contains('Q');
+                fen_black_kingside_castle = fen_castle_availability.Contains('k');
+                fen_black_queenside_castle = fen_castle_availability.Contains('q');
+            } else {
+                //do nothing, they're initialized to false already
+            }
+            #endregion
+            #region en passant square
+            throw new NotImplementedException();
+            #endregion
         }
 
         public static bool InRange(Vector2Int pos) {
@@ -260,8 +287,6 @@ namespace ConsoleChessApp {
                 }
             }
             LoadFromFen(start_fen);
-
-            ColourToMove = colour_to_move;
         }
     }
 }
