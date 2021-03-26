@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Q - 0 1";
+        private const string start_fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1";
 
         private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
             [Piece.PieceType.None] = ' ',
@@ -272,7 +272,12 @@ namespace ConsoleChessApp {
             }
             #endregion
             #region en passant square
-            throw new NotImplementedException();
+            string fen_en_passant = fen.Split(' ')[3];
+            if (fen_en_passant != "-") {
+                var fen_en_passant_square = new Vector2Int(Array.IndexOf(Utils.Alphabet, fen_en_passant[0]), GridSize - int.Parse(fen_en_passant[1].ToString()));
+                int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
+                Cells[fen_en_passant_square.x, fen_en_passant_square.y + backward].JustDoubleMoved = true;
+            }
             #endregion
         }
 
