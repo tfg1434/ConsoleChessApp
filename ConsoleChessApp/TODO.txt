@@ -1,5 +1,4 @@
 ﻿loading position in fixes
-- en passant square
 - fix double moves loading
 
 - can castle

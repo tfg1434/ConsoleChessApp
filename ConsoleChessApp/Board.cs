@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbqkbnr/1pp1pppp/p7/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 1";
+        private const string start_fen = "rnbqkbnr/1pp1pppp/8/p2pP3/8/7P/PPPP1PP1/RNBQKBNR w KQkq d6 0 1";
 
         private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
             [Piece.PieceType.None] = ' ',
@@ -233,15 +233,15 @@ namespace ConsoleChessApp {
         public void LoadFromFen(string fen) {
             #region piece placement
             string fen_board = fen.Split(' ')[0]; //skip the can castle part and shit
-            int x = 0;
-            int y = 0;
+            int board_x = 0;
+            int board_y = 0;
 
             foreach (char symbol in fen_board) {
                 if (symbol == '/') {
-                    x = 0;
-                    y++;
+                    board_x = 0;
+                    board_y++;
                 } else if (char.IsDigit(symbol)) {
-                    x += (int)char.GetNumericValue(symbol);
+                    board_x += (int)char.GetNumericValue(symbol);
                 } else {
                     //it's a letter
 
@@ -249,9 +249,9 @@ namespace ConsoleChessApp {
                     Piece.PieceColour colour = char.IsUpper(symbol) ? Piece.PieceColour.White : Piece.PieceColour.Black;
                     Piece.PieceType type = char_to_piece_type[char.ToLower(symbol)];
 
-                    Cells[x, y].MyPieceColour = colour;
-                    Cells[x, y].MyPieceType = type;
-                    x++;
+                    Cells[board_x, board_y].MyPieceColour = colour;
+                    Cells[board_x, board_y].MyPieceType = type;
+                    board_x++;
                 }
             }
             #endregion
@@ -277,6 +277,19 @@ namespace ConsoleChessApp {
                 var fen_en_passant_square = new Vector2Int(Array.IndexOf(Utils.Alphabet, fen_en_passant[0]), GridSize - int.Parse(fen_en_passant[1].ToString()));
                 int backward = ColourToMove == Piece.PieceColour.White ? 1 : -1;
                 Cells[fen_en_passant_square.x, fen_en_passant_square.y + backward].JustDoubleMoved = true;
+            }
+            #endregion
+            #region double move availability
+            for (int y = 0; y < GridSize; y++) {
+                for (int x = 0; x < GridSize; x++) {
+                    if (y == GridSize - 2 || y == 1) {
+                        break;
+                    }
+
+                    if (Cells[x, y].MyPieceType == Piece.PieceType.Pawn) {
+                        Cells[x, y].CanDoubleMove = false;
+                    }
+                }
             }
             #endregion
         }
