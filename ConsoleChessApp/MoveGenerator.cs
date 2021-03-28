@@ -222,7 +222,14 @@ namespace ConsoleChessApp {
             //one forward
             var target_cell = new Vector2Int(start_cell.x, start_cell.y + forward);
             if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType == Piece.PieceType.None) {
-                moves.Add(new Move(start_cell, target_cell, false));
+                //promotion?
+                if (target_cell.y == 0 || target_cell.y == Board.GridSize - 1) {
+                    foreach (Piece.PieceType promote in CanPromoteTo) {
+                        moves.Add(new Move(start_cell, target_cell, false, promote));
+                    }
+                } else {
+                    moves.Add(new Move(start_cell, target_cell, false));
+                }
             }
             //two forward
             if (piece.CanDoubleMove) {
@@ -239,7 +246,13 @@ namespace ConsoleChessApp {
 
                 target_cell = new Vector2Int(start_cell.x + side, start_cell.y + forward);
                 if (Board.InRange(target_cell) && cells[target_cell.x, target_cell.y].MyPieceType != Piece.PieceType.None && cells[target_cell.x, target_cell.y].MyPieceColour != piece.MyPieceColour){
-                    moves.Add(new Move(start_cell, target_cell, false));
+                    if (target_cell.y == 0 || target_cell.y == Board.GridSize - 1) {
+                        foreach (Piece.PieceType promote in CanPromoteTo) {
+                            moves.Add(new Move(start_cell, target_cell, false, promote));
+                        }
+                    } else {
+                        moves.Add(new Move(start_cell, target_cell, false));
+                    }
                 }
 
                 //en passant capture
@@ -294,15 +307,46 @@ namespace ConsoleChessApp {
 
         public static bool TryParseMove(out Move move, string notation, Board board) {
             #region normal move
-            Match match =  Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$", RegexOptions.IgnoreCase);
+            
+            Match match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$", RegexOptions.IgnoreCase);
+            Match promote_match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8]) ([bnrq])$", RegexOptions.IgnoreCase);
 
             if (match.Success) {
-                move = new Move(
-                    new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[1].Value)), Board.GridSize - int.Parse(match.Groups[2].ToString())),
-                    new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[3].Value)), Board.GridSize - int.Parse(match.Groups[4].ToString())),
-                    false
-                );
+                var from = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[1].Value)), Board.GridSize - int.Parse(match.Groups[2].ToString()));
+                var to = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[3].Value)), Board.GridSize - int.Parse(match.Groups[4].ToString()));
+                //if (to.y == 0 || to.y == Board.GridSize - 1 && board.Cells[from.x, from.y].MyPieceType == Piece.PieceType.Pawn && ask_promote) {
+                //    Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
+                //    Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
+                //    Utils.ClearCurrentConsoleLine();
 
+                //    Piece.PieceType promote_to;
+                //    while (true) {
+                //        try {
+                //            promote_to = Board.CharToPieceType[char.Parse(Console.ReadLine())];
+
+                //            if (CanPromoteTo.Contains(promote_to)) {
+                //                break;
+                //            }
+                //        } catch {
+                //            Utils.ClearCurrentConsoleLine();
+                //            continue;
+                //        }
+                //    }
+
+                //    move = new Move(from, to, false, promote_to);
+                //} else {
+                //    move = new Move(from, to, false);
+                //}
+
+                move = new Move(from, to, false);
+                return true;
+
+            } else if (promote_match.Success) {
+                var from = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(promote_match.Groups[1].Value)), Board.GridSize - int.Parse(promote_match.Groups[2].ToString()));
+                var to = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(promote_match.Groups[3].Value)), Board.GridSize - int.Parse(promote_match.Groups[4].ToString()));
+                Piece.PieceType promote_to = Board.CharToPieceType[char.Parse(promote_match.Groups[5].Value)];
+
+                move = new Move(from, to, false, promote_to);
                 return true;
             }
             #endregion

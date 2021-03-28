@@ -9,9 +9,9 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbqkbnr/1pp1pppp/8/p2pP3/8/7P/PPPP1PP1/RNBQKBNR w KQkq d6 0 1";
+        private const string start_fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";//"rnbqkbnr/1pp1pppp/8/p2pP3/8/7P/PPPP1PP1/RNBQKBNR w KQkq d6 0 1";
 
-        private static readonly Dictionary<Piece.PieceType, char> piece_type_to_char = new() {
+        public static readonly Dictionary<Piece.PieceType, char> PieceTypeToChar = new() {
             [Piece.PieceType.None] = ' ',
             [Piece.PieceType.King] = 'k',
             [Piece.PieceType.Pawn] = 'p',
@@ -20,7 +20,7 @@ namespace ConsoleChessApp {
             [Piece.PieceType.Rook] = 'r',
             [Piece.PieceType.Queen] = 'q',
         };
-        private static readonly Dictionary<char, Piece.PieceType> char_to_piece_type = new() {
+        public static readonly Dictionary<char, Piece.PieceType> CharToPieceType = new() {
             ['k'] = Piece.PieceType.King,
             ['p'] = Piece.PieceType.Pawn,
             ['n'] = Piece.PieceType.Knight,
@@ -42,12 +42,38 @@ namespace ConsoleChessApp {
         public bool fen_black_kingside_castle { get; private set; } = false;
         public bool fen_black_queenside_castle { get; private set; } = false;
 
-        public void Move(Move move, bool change_colour=true, bool draw=true, bool promote=true) {
+        public void Move(Move move, bool change_colour=true, bool draw=true) {
             //is_real_move determines whether to ask about pawn promotion and draw board
 
             if (!move.IsCastleMove) {
                 Piece to = Cells[move.TargetSquare.x, move.TargetSquare.y];
                 Piece from = Cells[move.StartSquare.x, move.StartSquare.y];
+
+                //if (ask_to_promote && (move.TargetSquare.y == 0 || move.TargetSquare.y == GridSize - 1) && from.MyPieceType == Piece.PieceType.Pawn) {
+                //    Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
+                //    Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
+                //    Utils.ClearCurrentConsoleLine();
+
+                //    Piece.PieceType promote_to;
+                //    while (true) {
+                //        try {
+                //            promote_to = CharToPieceType[char.Parse(Console.ReadLine())];
+
+                //            if (MoveGenerator.CanPromoteTo.Contains(promote_to)) {
+                //                break;
+                //            }
+                //        } catch {
+                //            Utils.ClearCurrentConsoleLine();
+                //            continue;
+                //        }
+                //    }
+
+                //    move = new Move(move.StartSquare, move.TargetSquare, false, promote_to);
+                //}
+
+                if (move.PromoteTo != Piece.PieceType.None) {
+                    from.MyPieceType = move.PromoteTo;
+                }
 
                 //is this move a double move?
                 if (from.MyPieceType == Piece.PieceType.Pawn && Math.Abs(move.StartSquare.y - move.TargetSquare.y) == 2) {
@@ -83,26 +109,8 @@ namespace ConsoleChessApp {
                 from.HasMovedBefore = false;
 
                 //it's a fuckin pawn promotion
-                if ((move.TargetSquare.y == GridSize - 1 || move.TargetSquare.y == 0) && to.MyPieceType == Piece.PieceType.Pawn && promote) {
-                    Console.SetCursorPosition(EnterMovePos.x, EnterMovePos.y);
-                    Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
-                    Utils.ClearCurrentConsoleLine();
-
-                    Piece.PieceType promote_to;
-                    while (true) {
-                        try {
-                            promote_to = char_to_piece_type[char.Parse(Console.ReadLine())];
-
-                            if (MoveGenerator.CanPromoteTo.Contains(promote_to)) {
-                                break;
-                            }
-                        } catch {
-                            Utils.ClearCurrentConsoleLine();
-                            continue;
-                        }
-                    }
-
-                    to.MyPieceType = promote_to;
+                if (move.PromoteTo != Piece.PieceType.None) {
+                    to.MyPieceType = move.PromoteTo;
                 }
 
                 to.CanDoubleMove = false;
@@ -114,7 +122,7 @@ namespace ConsoleChessApp {
                     Console.Write(" ");
                     Console.SetCursorPosition(move.TargetSquare.x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
                                 move.TargetSquare.y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
-                    char print = piece_type_to_char[to.MyPieceType];
+                    char print = PieceTypeToChar[to.MyPieceType];
                     if (to.MyPieceColour == Piece.PieceColour.White) {
                         print = char.ToUpper(print);
                     }
@@ -129,16 +137,16 @@ namespace ConsoleChessApp {
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x + 3, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true, false);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, true);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true);
 
                 } else if (move.TargetSquare.x < move.StartSquare.x) {
                     //queenside castle
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x - 4, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false, true, false);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true, false);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, true);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true);
                 }
             }
 
@@ -157,7 +165,7 @@ namespace ConsoleChessApp {
                 }
             }
 
-            new_board.Move(move, true, false, false);
+            new_board.Move(move, true, false);
 
             return new_board;
         }
@@ -171,7 +179,7 @@ namespace ConsoleChessApp {
                     Console.SetCursorPosition(x * (board_size.x / GridSize) + board_buffer.x + (board_size.x / GridSize) / 2,
                         y * (board_size.y) / GridSize + board_buffer.y + (board_size.y / GridSize) / 2);
 
-                    char print = piece_type_to_char[Cells[x, y].MyPieceType];
+                    char print = PieceTypeToChar[Cells[x, y].MyPieceType];
 
                     if (Cells[x, y].MyPieceColour == Piece.PieceColour.White) {
                         print = char.ToUpper(print);
@@ -247,7 +255,7 @@ namespace ConsoleChessApp {
 
                     //upper fen is white, lower is black
                     Piece.PieceColour colour = char.IsUpper(symbol) ? Piece.PieceColour.White : Piece.PieceColour.Black;
-                    Piece.PieceType type = char_to_piece_type[char.ToLower(symbol)];
+                    Piece.PieceType type = CharToPieceType[char.ToLower(symbol)];
 
                     Cells[board_x, board_y].MyPieceColour = colour;
                     Cells[board_x, board_y].MyPieceType = type;
