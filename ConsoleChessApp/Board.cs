@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";//"rnbqkbnr/1pp1pppp/8/p2pP3/8/7P/PPPP1PP1/RNBQKBNR w KQkq d6 0 1";
+        private const string start_fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/P7/1PP1NnPP/RNBQK2R b KQ - 0 8";//"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 
         public static readonly Dictionary<Piece.PieceType, char> PieceTypeToChar = new() {
             [Piece.PieceType.None] = ' ',
