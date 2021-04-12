@@ -30,7 +30,7 @@ namespace ConsoleChessApp {
                 Board test_board = Board.SimulateMove(move, board);
                 int n = NPositions(depth - 1, test_board);
                 total_n += n;
-                my_list.Add(Utils.Alphabet[move.StartSquare.x].ToString() + (8 - move.StartSquare.y).ToString() + Utils.Alphabet[move.TargetSquare.x].ToString() + (8 - move.TargetSquare.y).ToString() + ": " + n.ToString());
+                my_list.Add(MoveGenerator.MoveToNotation(move) + ": " + n.ToString());
             }
 
             foreach (string notation in my_list) {
@@ -41,14 +41,14 @@ namespace ConsoleChessApp {
         }
 
         static void Main(string[] args) {
-            //var board = new Board();
+            var board = new Board();
             //Test(board, 3);
 
-            var board = new Board();
-            board.Draw();
+            if (false) { } else {
+                board.Draw();
 
-            while (true) {
-                if (board.ColourToMove == Board.PlayerColour) {
+                while (true) {
+                    if (board.ColourToMove == Board.PlayerColour) {
                     Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
                     Utils.ClearCurrentConsoleLine();
                     Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
@@ -74,8 +74,9 @@ namespace ConsoleChessApp {
                         Utils.ClearCurrentConsoleLine();
                         continue;
                     }
-                } else if (board.ColourToMove == Board.AIPlayerColour) {
-                    board.Move(AIPlayer.ChooseMove(board));
+                    } else if (board.ColourToMove == Board.AIPlayerColour) {
+                        board.Move(AIPlayer.ChooseMove(board));
+                    }
                 }
             }
         }

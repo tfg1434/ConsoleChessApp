@@ -1,11 +1,1 @@
-﻿loading position in fixes
-- fix double moves loading
-
-- can castle
-- active colour
-
-----------should i bother fixing these----------------
-ai can't promote
-
-
-get resharper
+﻿get resharper

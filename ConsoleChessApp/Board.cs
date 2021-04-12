@@ -9,7 +9,7 @@ namespace ConsoleChessApp {
     class Board {
         private static readonly Vector2Int board_size = new(64, 32); //32, 16 base size
         private static readonly Vector2Int board_buffer = new(3, 1);
-        private const string start_fen = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/P7/1PP1NnPP/RNBQK2R b KQ - 0 8";//"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+        private const string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         public static readonly Dictionary<Piece.PieceType, char> PieceTypeToChar = new() {
             [Piece.PieceType.None] = ' ',
@@ -137,16 +137,16 @@ namespace ConsoleChessApp {
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x + 3, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x - 2, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false, true);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, draw);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, draw);
 
                 } else if (move.TargetSquare.x < move.StartSquare.x) {
                     //queenside castle
                     Vector2Int rook_start_square = new Vector2Int(move.StartSquare.x - 4, move.StartSquare.y);
                     Vector2Int rook_target_square = new Vector2Int(rook_start_square.x + 3, rook_start_square.y);
 
-                    Move(new Move(rook_start_square, rook_target_square, false), false, true);
-                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, true);
+                    Move(new Move(rook_start_square, rook_target_square, false), false, draw);
+                    Move(new Move(move.StartSquare, move.TargetSquare, false), false, draw);
                 }
             }
 

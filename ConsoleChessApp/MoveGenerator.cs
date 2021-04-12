@@ -43,6 +43,10 @@ namespace ConsoleChessApp {
             return moves;
         }
 
+        public static List<Move> GeneratePseudoLegalMoves(Board board) {
+            return GeneratePseudoLegalMoves(board, board.ColourToMove);
+        }
+
         public static List<Move> GenerateMoves(Board board, Piece.PieceColour colour) {
             List<Move> moves = GeneratePseudoLegalMoves(board, colour);
             Piece.PieceColour opponent_colour = colour == Piece.PieceColour.White ? Piece.PieceColour.Black : Piece.PieceColour.White;
@@ -388,6 +392,21 @@ namespace ConsoleChessApp {
 
             move = default;
             return false;
+        }
+
+        public static string MoveToNotation(Move move) {
+            if (move.PromoteTo != Piece.PieceType.None) {
+                return (
+                    Utils.Alphabet[move.StartSquare.x].ToString() + (8 - move.StartSquare.y).ToString() +
+                    Utils.Alphabet[move.TargetSquare.x].ToString() + (8 - move.TargetSquare.y).ToString()
+                );
+            } else {
+                return (
+                    Utils.Alphabet[move.StartSquare.x].ToString() + (8 - move.StartSquare.y).ToString() +
+                    Utils.Alphabet[move.TargetSquare.x].ToString() + (8 - move.TargetSquare.y).ToString() +
+                    Board.PieceTypeToChar[move.PromoteTo].ToString()
+                );
+            }
         }
     }
 }
