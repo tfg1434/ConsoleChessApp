@@ -44,11 +44,10 @@ namespace ConsoleChessApp {
             var board = new Board();
             //Test(board, 3);
 
-            if (false) { } else {
-                board.Draw();
+            board.Draw();
 
-                while (true) {
-                    if (board.ColourToMove == Board.PlayerColour) {
+            while (true) {
+                if (board.ColourToMove == Board.PlayerColour) {
                     Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
                     Utils.ClearCurrentConsoleLine();
                     Console.WriteLine("Enter your move below in coordinate notation: (e.g. a2 a3)");
@@ -74,9 +73,9 @@ namespace ConsoleChessApp {
                         Utils.ClearCurrentConsoleLine();
                         continue;
                     }
-                    } else if (board.ColourToMove == Board.AIPlayerColour) {
-                        board.Move(AIPlayer.ChooseMove(board));
-                    }
+
+                } else if (board.ColourToMove == Board.AIPlayerColour) {
+                    board.Move(AIPlayer.ChooseMove(board));
                 }
             }
         }

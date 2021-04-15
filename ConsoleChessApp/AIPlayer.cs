@@ -48,7 +48,7 @@ namespace ConsoleChessApp {
 
             foreach (Move move in moves) {
                 Board test_board = Board.SimulateMove(move, board);
-                int eval = -_Search(out _, depth - 1, test_board);
+                int eval = _Search(out _, depth - 1, test_board);
                 if (eval > best_eval) {
                     best_move = move;
                     best_eval = eval;
