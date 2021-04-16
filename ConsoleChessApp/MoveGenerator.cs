@@ -312,35 +312,12 @@ namespace ConsoleChessApp {
         public static bool TryParseMove(out Move move, string notation, Board board) {
             #region normal move
             
-            Match match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$", RegexOptions.IgnoreCase);
-            Match promote_match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8]) ([bnrq])$", RegexOptions.IgnoreCase);
+            Match match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8])$");
+            Match promote_match = Regex.Match(notation, "^([a-h])([1-8]) ([a-h])([1-8]) ([bnrq])$");
 
             if (match.Success) {
                 var from = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[1].Value)), Board.GridSize - int.Parse(match.Groups[2].ToString()));
                 var to = new Vector2Int(Array.IndexOf(Utils.Alphabet, char.Parse(match.Groups[3].Value)), Board.GridSize - int.Parse(match.Groups[4].ToString()));
-                //if (to.y == 0 || to.y == Board.GridSize - 1 && board.Cells[from.x, from.y].MyPieceType == Piece.PieceType.Pawn && ask_promote) {
-                //    Console.SetCursorPosition(Board.EnterMovePos.x, Board.EnterMovePos.y);
-                //    Console.WriteLine("What would you like to promote to? Write your answer as a char (e.g. q, r, b, n).");
-                //    Utils.ClearCurrentConsoleLine();
-
-                //    Piece.PieceType promote_to;
-                //    while (true) {
-                //        try {
-                //            promote_to = Board.CharToPieceType[char.Parse(Console.ReadLine())];
-
-                //            if (CanPromoteTo.Contains(promote_to)) {
-                //                break;
-                //            }
-                //        } catch {
-                //            Utils.ClearCurrentConsoleLine();
-                //            continue;
-                //        }
-                //    }
-
-                //    move = new Move(from, to, false, promote_to);
-                //} else {
-                //    move = new Move(from, to, false);
-                //}
 
                 move = new Move(from, to, false);
                 return true;

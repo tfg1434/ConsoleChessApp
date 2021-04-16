@@ -1,0 +1,16 @@
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.exe
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.deps.json
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.runtimeconfig.json
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.runtimeconfig.dev.json
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.dll
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ref\ConsoleChessApp.dll
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\x64\Test\net5.0\ConsoleChessApp.pdb
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.csprojAssemblyReference.cache
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.AssemblyInfoInputs.cache
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.AssemblyInfo.cs
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.csproj.CoreCompileInputs.cache
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.dll
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ref\ConsoleChessApp.dll
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.pdb
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\x64\Test\net5.0\ConsoleChessApp.genruntimeconfig.cache

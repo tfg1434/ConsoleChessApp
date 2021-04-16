@@ -1,0 +1,5 @@
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Release\net5.0\publish\ConsoleChessApp.exe
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Release\net5.0\publish\ConsoleChessApp.dll
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Release\net5.0\publish\ConsoleChessApp.deps.json
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Release\net5.0\publish\ConsoleChessApp.runtimeconfig.json
+C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Release\net5.0\publish\ConsoleChessApp.pdb

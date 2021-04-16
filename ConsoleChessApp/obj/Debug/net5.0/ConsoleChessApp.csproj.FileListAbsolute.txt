@@ -5,7 +5,6 @@ C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Debug\net5.0\Con
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Debug\net5.0\ConsoleChessApp.dll
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Debug\net5.0\ref\ConsoleChessApp.dll
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\bin\Debug\net5.0\ConsoleChessApp.pdb
-C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\Debug\net5.0\ConsoleChessApp.csprojAssemblyReference.cache
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\Debug\net5.0\ConsoleChessApp.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\Debug\net5.0\ConsoleChessApp.AssemblyInfoInputs.cache
 C:\Users\Eglin\source\repos\ConsoleChessApp\ConsoleChessApp\obj\Debug\net5.0\ConsoleChessApp.AssemblyInfo.cs
