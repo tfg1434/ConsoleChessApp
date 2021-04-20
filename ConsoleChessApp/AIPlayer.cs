@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace ConsoleChessApp {
     static class AIPlayer {
+        private static int search_depth = 3;
+
         private static Dictionary<Piece.PieceType, int> piece_values = new() {
             [Piece.PieceType.None] = 0,
             [Piece.PieceType.Pawn] = 100,
@@ -86,7 +88,7 @@ namespace ConsoleChessApp {
             //List<Move> moves = MoveGenerator.GenerateMoves(board);
             //return moves[random.Next(moves.Count)];
 
-            _Search(out Move best_move, 3, board);
+            _Search(out Move best_move, search_depth, board);
             return best_move;
         }
     }
